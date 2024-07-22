@@ -1,0 +1,93 @@
+[
+  {
+    "objectID": "schoolsegmpc.html",
+    "href": "schoolsegmpc.html",
+    "title": "School Segregation Descriptive Report",
+    "section": "",
+    "text": "There seems to be conflicting information regarding what schools are metro vs. not?\nDo we want to add all charter and private schools or are we only focused on private schools?\nSome school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?\nThe total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)\nMany schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?\nHmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?\nWhich free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative."
+  },
+  {
+    "objectID": "schoolsegmpc.html#enrollment-breakdown-over-time",
+    "href": "schoolsegmpc.html#enrollment-breakdown-over-time",
+    "title": "School Segregation Descriptive Report",
+    "section": "Enrollment Breakdown Over Time",
+    "text": "Enrollment Breakdown Over Time"
+  },
+  {
+    "objectID": "schoolsegmpc.html#proportion-of-bipoc-students-by-metro-district",
+    "href": "schoolsegmpc.html#proportion-of-bipoc-students-by-metro-district",
+    "title": "School Segregation Descriptive Report",
+    "section": "Proportion of BIPOC Students by Metro District",
+    "text": "Proportion of BIPOC Students by Metro District"
+  },
+  {
+    "objectID": "schoolsegmpc.html#percent-of-bipoc-students-by-school-across-metro-districts",
+    "href": "schoolsegmpc.html#percent-of-bipoc-students-by-school-across-metro-districts",
+    "title": "School Segregation Descriptive Report",
+    "section": "Percent of BIPOC Students by School Across Metro Districts",
+    "text": "Percent of BIPOC Students by School Across Metro Districts"
+  },
+  {
+    "objectID": "schoolsegmpc.html#percent-of-metro-districts-bipoc-students-by-school",
+    "href": "schoolsegmpc.html#percent-of-metro-districts-bipoc-students-by-school",
+    "title": "School Segregation Descriptive Report",
+    "section": "Percent of Metro District’s BIPOC Students by School",
+    "text": "Percent of Metro District’s BIPOC Students by School"
+  },
+  {
+    "objectID": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-minneapolis-schools",
+    "href": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-minneapolis-schools",
+    "title": "School Segregation Descriptive Report",
+    "section": "Percent Change in BIPOC Student Representation Across Minneapolis Schools",
+    "text": "Percent Change in BIPOC Student Representation Across Minneapolis Schools"
+  },
+  {
+    "objectID": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-saint-paul-schools",
+    "href": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-saint-paul-schools",
+    "title": "School Segregation Descriptive Report",
+    "section": "Percent Change in BIPOC Student Representation Across Saint Paul Schools",
+    "text": "Percent Change in BIPOC Student Representation Across Saint Paul Schools"
+  },
+  {
+    "objectID": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-anoka-hennepin-schools",
+    "href": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-anoka-hennepin-schools",
+    "title": "School Segregation Descriptive Report",
+    "section": "Percent Change in BIPOC Student Representation Across Anoka-Hennepin Schools",
+    "text": "Percent Change in BIPOC Student Representation Across Anoka-Hennepin Schools"
+  },
+  {
+    "objectID": "schoolsegmpc.html#racial-composition-and-economic-segregation",
+    "href": "schoolsegmpc.html#racial-composition-and-economic-segregation",
+    "title": "School Segregation Descriptive Report",
+    "section": "Racial Composition and Economic Segregation",
+    "text": "Racial Composition and Economic Segregation"
+  },
+  {
+    "objectID": "schoolsegmpc.html#racial-composition-by-district-in-twin-cities-metro",
+    "href": "schoolsegmpc.html#racial-composition-by-district-in-twin-cities-metro",
+    "title": "School Segregation Descriptive Report",
+    "section": "Racial Composition by District in Twin Cities Metro",
+    "text": "Racial Composition by District in Twin Cities Metro"
+  },
+  {
+    "objectID": "schoolsegmpc.html#black-white-dissimilarity-index",
+    "href": "schoolsegmpc.html#black-white-dissimilarity-index",
+    "title": "School Segregation Descriptive Report",
+    "section": "Black-White Dissimilarity Index",
+    "text": "Black-White Dissimilarity Index"
+  },
+  {
+    "objectID": "schoolsegmpc.html#asian-white-dissimilarity-index",
+    "href": "schoolsegmpc.html#asian-white-dissimilarity-index",
+    "title": "School Segregation Descriptive Report",
+    "section": "Asian-White Dissimilarity Index",
+    "text": "Asian-White Dissimilarity Index"
+  },
+  {
+    "objectID": "schoolsegmpc.html#hispanic-white-dissimilarity-index",
+    "href": "schoolsegmpc.html#hispanic-white-dissimilarity-index",
+    "title": "School Segregation Descriptive Report",
+    "section": "Hispanic-White Dissimilarity Index",
+    "text": "Hispanic-White Dissimilarity Index"
+  }
+]
