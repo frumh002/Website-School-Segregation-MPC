@@ -4,5 +4,8 @@ author:
   - Mateo Frumholtz
   - Sara Garcia
 date: 07-22-2024
+format:
+  html:
+    embed-resources: true
 ---
 
