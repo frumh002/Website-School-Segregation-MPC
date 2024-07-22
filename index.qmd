@@ -1,19 +1,8 @@
 ---
-title: "About Me"
-about:
-  id: me
-  template: broadside
-  image: img/profile.png
+title: "School Segregation Descriptive Report"
+author: 
+  - Mateo Frumholtz
+  - Sara Garcia
+date: 07-22-2024
 ---
 
-:::{#me}
-
-## Goals
-
-## Education
-
-## Experience
-
-:::
-
-Thanks for checking out my web site!

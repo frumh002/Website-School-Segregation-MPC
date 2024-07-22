@@ -1,27 +1,31 @@
 project:
   type: website
-  output-dir: docs
   
 website:
-  title: "MY WEB SITE"
-  navbar:
-    left:
+  page-navigation: true
+  title: "MPC School Segregation Collaborative Report"
+
+  sidebar: 
+    logo: img/mpc_logo.png
+    pinned: true
+    align: center
+    tools:
+        - icon: github
+          href: https://github.com/frumh002
+  
+    style: "docked"
+    search: false
+    collapse-level: 1
+    contents: 
       - href: index.qmd
         text: Home
-      - projects.qmd
-    tools:
-      - icon: twitter
-        href: https://twitter.com/
-      - icon: github
-        href: https://github.com/YOURUSERNAME/YOURREPO
-  page-footer:
-    right: "Built with [Quarto](https://quarto.org/)"
-    left: "&copy; Copyright 2023, YOUR NAME"
-
+      - schoolsegmpc.qmd
+    
 format:
   html:
-    theme: cerulean
+    theme:
+      light: [cosmo, theme.scss]
+    code-copy: true
+    code-overflow: wrap
     toc: true
-
-editor: source
-
+    
