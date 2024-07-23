@@ -375,6 +375,55 @@ top.metro.districts <- schools %>%
   filter(runsum<0.51) %>% 
   pull(leaname)
 
+top.metro.districts.perc <- as.character(schools %>% 
+  filter(year==2022, leaname %in% metro.districts) %>% 
+  mutate(topm = case_when(leaname %in% top.metro.districts ~ "Top",
+                          TRUE ~ "Not Top")) %>% 
+  group_by(topm) %>% 
+  summarise(tot = sum(member)) %>%
+  mutate(perc = round(tot/sum(tot), 2)*100) %>% 
+  filter(topm=="Top") %>% 
+  pull(perc))
+
+# Color palettes
+metro.palette <- Polychrome::glasbey.colors(n = length(top.metro.districts) + 2)
+
+# School Levels
+elementary <- schools %>% 
+  filter(level=="Elementary/Primary") %>% 
+  pull(schoolname)
+middle <- schools %>% 
+  filter(level=="Middle") %>% 
+  pull(schoolname)
+high <- schools %>% 
+  filter(level=="High/Secondary") %>% 
+  pull(schoolname)
+
+# Identify the top schools per level in Twin Cities
+top.schools <- schools %>% 
+  filter(year==2022, leaname %in% top.metro.districts) %>% 
+  group_by(schoolname, leaname, level) %>% 
+  summarise(tot = sum(member)) %>% 
+  arrange(level, desc(tot)) %>% 
+  ungroup() %>% 
+  group_by(level) %>% 
+  mutate(perc = tot/sum(tot),
+         runsum = cumsum(perc)) %>% 
+  filter(tot>100) %>% 
+  pull(schoolname)
+
+# Correct for missing school levels
+school.levels <- schools %>% 
+  filter(leaname %in% metro.districts) %>% 
+  group_by(schoolname, level) %>% 
+  summarise(tot= n()) %>% 
+  arrange(schoolname, desc(tot)) %>% 
+  slice_head() %>% 
+  select(-tot)
+
+# Order for levels
+lords <- c("Elementary/Primary", "Middle", "High/Secondary")
+
 
 ```
 
@@ -383,7 +432,7 @@ top.metro.districts <- schools %>%
 
 ## Enrollment Breakdown Over Time
 
-```{r re_enrollment_prep}
+```{r re_prep}
 #| echo: false
 #| include: false
 
@@ -402,12 +451,12 @@ distr.bipocs <- distr.dems %>%
 ```
 
 
-```{r re_enrollment_plot}
+```{r re_plot}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
 
-# R& E Enrollment for Entire Metro Over Time ------------------------------
+# R & E Enrollment for Entire Metro Over Time -----------------------------
 
 distr.dems %>% 
   filter(leaname %in% metro.districts) %>% 
@@ -532,13 +581,13 @@ distr.dems %>%
       color = "#ffffff"
     )
   ) +
-  guides(color = guide_legend(nrow = 2, byrow = TRUE))
+  guides(color = guide_legend(nrow = 1, byrow = TRUE))
+
 
 ```
 
 ## Proportion of BIPOC Students by Metro District
-
-```{r bipoc_metro_plot}
+```{r distr_bipoc_plot}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -654,10 +703,10 @@ distr.dems %>%
       color = "#ffffff"
     )
   ) +
-  guides(color = guide_legend(nrow = 5, byrow = TRUE))
-
+  guides(color = guide_legend(nrow = 6, byrow = TRUE))
 
 ```
+
 
 ## Percent of BIPOC Students by School Across Metro Districts
 
@@ -681,6 +730,26 @@ bip.tim <- schools %>%
   select(year, leaname, schoolname, perc_bipoc_sch, perc_bipoc_distr) %>% 
   pivot_longer(c(-year, -leaname, -schoolname), names_to = "type", values_to = "value")
 
+# Creating order based on average of medians
+ords <- bip.tim %>% 
+  filter(type=="perc_bipoc_sch", leaname %in% top.metro.districts) %>% 
+  group_by(leaname) %>% 
+  summarise(
+    mean = mean(value, na.rm = T)
+  ) %>% 
+  arrange(desc(mean)) %>% 
+  pull(leaname)
+
+bipoc.time <- schools %>% 
+  filter(leaname %in% metro.districts) %>% 
+  group_by(year) %>% 
+  mutate(bipoc = floor(tot_asian + tot_nam + tot_hisp + tot_black + tot_tr)) %>% 
+  summarise(
+    tot = sum(floor(member), na.rm = T),
+    bipoc = sum(bipoc, na.rm = T)) %>% 
+  mutate(perc_bipoc = bipoc/tot) %>% 
+  select(-tot, -bipoc)
+
 ```
 
 
@@ -693,15 +762,25 @@ bip.tim <- schools %>%
 
 bip.tim %>% 
   filter(type=="perc_bipoc_sch", leaname %in% top.metro.districts) %>% 
+  mutate(leaname = factor(leaname, levels = ords)) %>% 
   ggplot() +
   aes(x = year, y = value, group = year) +
   geom_boxplot(
-    color = "#E13342FF",
-    # width = .5, 
+    color = "#003049",
+    width = 1, 
     ## remove outliers
     outlier.color = NA,
     # alpha = 0.7
   ) +
+  stat_summary(
+    fun = median,
+    geom = "line",
+    aes(group = leaname) ,
+    color = "#d62828",
+    size = 0.7
+  ) +
+  geom_point(data = bipoc.time, aes(x = year, y = perc_bipoc), color = "#e36414", size = 0.8) +
+  geom_line(data = bipoc.time, aes(x = year, y = perc_bipoc, group = 1), color = "#e36414", size = 0.4) +
   facet_wrap(~leaname) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1),
                      limits = c(0, 1)) +
@@ -709,7 +788,7 @@ bip.tim %>%
     # Main title label
     title = "Percent BIPOC by School for Largest Minnesota Twin Cities School Districts, 1991-2022",
     # Subtitle label
-    subtitle = paste0("These School Districts Account for 50% of Twin Cities Metro Students in 2022"),
+    subtitle = paste0("These School Districts Account for 50% of Twin Cities Metro Students in 2022<br><b style='color:#003049'>Boxplot</b>, <b style='color:#d62828'>Median</b>, and <b style='color:#e36414'>Metro % BIPOC Reference</b>"),
     # X-axis label
     x = "Fall of School Year",
     # Y-axis label
@@ -733,6 +812,14 @@ bip.tim %>%
       family = "",
       face = "bold",
       size = 16,
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
       color = "black"
     ),
     # Plot title formatting (margin t=top, b=bottom)
@@ -1963,6 +2050,864 @@ distr.dems %>%
 
 ```
 
+
+# School Closures and Openings
+
+## Number of Schools in the TC Metro
+
+```{r schools_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+schools %>% 
+  left_join(school.levels, by = "schoolname", suffix = c("", ".df1")) %>%
+  mutate(level = coalesce(level, level.df1)) %>%
+  select(-level.df1) %>% 
+  filter(leaname %in% top.metro.districts, level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  group_by(year, level, leaname) %>% 
+  summarise(
+    tot = n()
+  ) %>% 
+  ggplot() +
+  aes(x = year, y = tot, fill = level) +
+  geom_col(
+    position = position_dodge2(preserve = "single"),
+    width = 1.5) +
+  scale_fill_manual(values = c("#37659EFF", "#348FA7FF",  "#8AD9B1FF")) +
+  scale_y_continuous(
+    limits = c(0, 75),
+    breaks = seq(0, 75, by = 25)
+  ) +
+  facet_wrap(~leaname) +
+  labs(
+    # Main title label
+    title = "Number of Schools in the Twin Cities Metro, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("<b style='color:#37659EFF'>Elementary/Primary Schools</b>, <b style='color:#8AD9B1FF'>Middle Schools</b>, and <b style='color:#348FA7FF'>High/Secondary Schools</b>"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Number of Schools",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "none",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+## Number of Schools Closed and Opened Over Time
+
+::: {.callout-note}
+## Limitations
+A school closure is defined as any school that had students for at least one year followed by no students in a subsequent year. A school opening is defined as a school that had no students after 1991 but enrolled students before 2022 for at least one year. Some schools reopen after being closed, and only their initial closure is reflected in this analysis.
+:::
+
+```{r schools_closed_prep}
+#| echo: false
+#| include: false
+
+# Which schools have at least one year of data and less than the full 32 years of data
+# This implies that any school has not been open for at least one of the years between 1991 and 2022
+closed <- schools %>% 
+  left_join(school.levels, by = "schoolname", suffix = c("", ".df1")) %>%
+  mutate(level = coalesce(level, level.df1)) %>%
+  select(-level.df1) %>% 
+  filter(leaname %in% metro.districts, level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  select(
+    schoolname, leaname, year, level, member, 
+    tot_nam, tot_asian, tot_hisp, tot_black, tot_tr, tot_white) %>% 
+  complete(schoolname, leaname, year) %>%
+  mutate(
+    ch = case_when(is.na(member) ~ 0,
+                   TRUE ~ 1)
+  ) %>% 
+  group_by(schoolname, leaname) %>% 
+  summarise(
+    tot = sum(ch)) %>% 
+  filter(tot!=0, tot!=32)
+
+# Dataset created to select which schools were closed and 
+sch.delt <- schools %>% 
+  left_join(school.levels, by = "schoolname", suffix = c("", ".df1")) %>%
+  mutate(level = coalesce(level, level.df1)) %>%
+  select(-level.df1) %>% 
+  filter(leaname %in% metro.districts, level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  select(
+    schoolname, leaname, year, level, member,
+    tot_nam, tot_asian, tot_hisp, tot_black, tot_tr, tot_white) %>% 
+  complete(schoolname, leaname, year) %>% 
+  inner_join(closed, by = c("schoolname", "leaname")) %>%  # I only want to keep schools that were closed
+  group_by(schoolname, leaname) %>% 
+  arrange(schoolname, year) %>% 
+  mutate(
+    yr_open = min(year[!is.na(member)]),
+    yr_close = max(year[!is.na(member)])
+  ) %>% 
+  ungroup()
+
+# Plotting closures
+sch.closed <- sch.delt %>% 
+  filter(yr_close!=2022, year==yr_close) %>% 
+  group_by(level, year) %>% 
+  summarise(tot = n()) %>% 
+  mutate(type = "closed")
+# Seeing which school districts are most impacted
+sch.closed.distr <- sch.delt %>% 
+  filter(yr_close!=2022, year==yr_close) %>% 
+  group_by(level, leaname, year) %>% 
+  summarise(tot = n()) %>% 
+  mutate(type = "closed")
+# Plotting openings
+sch.open <- sch.delt %>% 
+  filter(yr_open!=1991, year==yr_open) %>% 
+  group_by(level, year) %>% 
+  summarise(tot = n()) %>% 
+  mutate(type = "open")
+# Merging together for plot
+sch.change <- rbind(sch.closed, sch.open)
+
+```
+
+
+```{r schools_closed_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+sch.change %>% 
+  mutate(type = str_to_title(type)) %>% 
+  ggplot() +
+  aes(x = year, y = tot, fill = level, group = type) +
+  geom_col(position = "stack") +
+  facet_wrap(~type) +
+  scale_fill_manual(values = c("#ef476f", "#06d6a0", "#118ab2")) +
+  scale_x_continuous(breaks = seq(1991, 2022, by = 5)) +
+  labs(
+    # Main title label
+    title = "Number of School Closures and Openings in the Twin Cities Metro, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("<b style='color:#ef476f'>Elementary/Primary Schools</b>, <b style='color:#118ab2'>Middle Schools</b>, and <b style='color:#06d6a0'>High/Secondary Schools</b>"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Number of Schools",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "none",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+
+```
+
+## School Closures by District
+
+```{r school_close_distr_prep}
+#| echo: false
+#| include: false
+
+level.yr.members <- schools %>% 
+  left_join(school.levels, by = "schoolname", suffix = c("", ".df1")) %>%
+  mutate(level = coalesce(level, level.df1)) %>%
+  select(-level.df1) %>% 
+  filter(leaname %in% metro.districts, level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  rename(tot_member = "member") %>% 
+  mutate(across(contains("tot"), floor)) %>% 
+  group_by(level, year) %>% 
+  summarise(
+    tot_member = sum(tot_member),
+    tot_nam = sum(tot_nam),
+    tot_asian = sum(tot_asian),
+    tot_hisp = sum(tot_hisp),
+    tot_black = sum(tot_black),
+    tot_tr = sum(tot_tr),
+    tot_white = sum(tot_white)
+  )
+
+# Plot of which school districts had the most closures over time
+top.school.closures <- sch.closed.distr %>% 
+  group_by(leaname) %>% 
+  summarise(tot = sum(tot)) %>% 
+  arrange(desc(tot)) %>% 
+  mutate(
+    sum = cumsum(tot),
+    perc = sum/sum(tot)) %>% 
+  top_n(tot, n = 10) %>% 
+  pull(leaname)
+
+top.school.closures.perc <- sch.closed.distr %>% 
+  group_by(leaname) %>% 
+  summarise(tot = sum(tot)) %>% 
+  arrange(desc(tot)) %>% 
+  mutate(
+    sum = cumsum(tot),
+    perc = round((sum/sum(tot))*100)) %>% 
+  top_n(tot, n = 10) %>% 
+  filter(perc == max(perc)) %>% 
+  pull(perc)
+
+```
+
+::: {.callout-tip}
+## Of Note
+Intermediate School District 287 comprised 26% of all school closures between 1991-2022.
+:::
+
+```{r school_close_distr_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+sch.closed.distr %>% 
+  mutate(leaname = case_when(leaname%in% top.school.closures ~ leaname,
+                             TRUE ~ "Other")) %>% 
+  group_by(leaname, year) %>% 
+  summarise(tot = sum(tot)) %>%
+  ggplot() +
+  aes(x = year, y = tot, fill = leaname) +
+  geom_stream(color = 1, lwd = 0.25, type = "proportional", sorting = "onset") +
+  scale_fill_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#005300", "#780000", "#c1121f", "#fdf0d5",  "#ff99c8", "#a7c957", "#d0f4de", "#778da9", "#9b5de5")) +
+  scale_x_continuous(breaks = seq(1991, 2022, by = 5)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    # Main title label
+    title = "Proportion of School Closures by District in the Twin Cities Metro, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These school districts make up ", top.school.closures.perc, "% of Metro School Closures between 1992-2022<br>
+                      <b style='color:#2a9d8f'>Intermediate School District 287</b>, <b style='color:#f4a261'>Minneapolis Public School District</b>, and <b style='color:#a7c957'>St. Paul Public School District</b> made up 51% of all closures"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Number of Schools",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(fill = guide_legend(nrow = 4, byrow = TRUE))
+
+```
+
+
+## Impact of School Closures on Students Across the Metro
+
+::: {.callout-note}
+## Limitations
+Any estimates of counts of people affected by school closures will be imperfect because it's hard to account for schools that closed and reopened multiple times. With that said, this analysis selects only the first instance a school closed to estimate the number of students impacted.
+:::
+
+```{r school_impact_prep}
+#| echo: false
+#| include: false
+
+# How many schools were closed by level
+elementary.closed <- sch.closed %>% 
+  group_by(level) %>% 
+  summarise(tot = sum(tot)) %>% 
+  filter(level=="Elementary/Primary") %>% 
+  pull(tot)
+middle.closed <- sch.closed %>% 
+  group_by(level) %>% 
+  summarise(tot = sum(tot)) %>% 
+  filter(level=="Middle") %>% 
+  pull(tot)
+high.closed <- sch.closed %>% 
+  group_by(level) %>% 
+  summarise(tot = sum(tot)) %>% 
+  filter(level=="High/Secondary") %>% 
+  pull(tot)
+
+```
+
+```{r school_impact_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# Plot of impact of school closures on students
+sch.delt %>% 
+  filter(yr_close!=2022, year==yr_close) %>% 
+  rename(tot_member = "member") %>% 
+  mutate(
+    across(contains("tot"), floor),
+  ) %>% 
+  group_by(level, year) %>% 
+  summarise(
+    tot_member = sum(tot_member),
+    tot_nam = sum(tot_nam),
+    tot_asian = sum(tot_asian),
+    tot_hisp = sum(tot_hisp),
+    tot_black = sum(tot_black),
+    tot_tr = sum(tot_tr),
+    tot_white = sum(tot_white)) %>% 
+  left_join(level.yr.members, by = c("level", "year")) %>% 
+  mutate(
+    perc_member = tot_member.x/tot_member.y,
+    perc_nam = tot_nam.x/tot_nam.y,
+    perc_asian = tot_asian.x/tot_asian.y,
+    perc_hisp = tot_hisp.x/tot_hisp.y,
+    perc_black = tot_black.x/tot_black.y,
+    perc_tr = tot_tr.x/tot_tr.y,
+    perc_white = tot_white.x/tot_white.y,
+  ) %>% 
+  select(level, year, contains("perc")) %>% 
+  pivot_longer(c(-level, -year), names_to = "type", values_to = "perc") %>% 
+  left_join(sch.closed %>% select(-type), by = c("level", "year")) %>% 
+  arrange(level, year) %>% 
+  mutate(
+    type = case_when(type=="perc_asian" ~ "Asian",
+                     type=="perc_hisp" ~ "Hispanic/Latin@",
+                     type=="perc_black" ~ "Black/African American",
+                     type=="perc_member" ~ "All Students",
+                     type=="perc_white" ~ "White",
+                     type=="perc_nam" ~ "Native American",
+                     type=="perc_tr" ~ "Multiracial")
+  ) %>% 
+  ungroup() %>% 
+  ggplot() +
+  aes(x = year, y = perc, color = type, size = tot) +
+  geom_point() +
+  scale_color_manual(values = c("#0000FF", "#FF0000", "#00FF00", "#000033", "#FF00B6", "#009FFF", "#FFD300")) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    limits = c(0, .08),
+    breaks = seq(0, .08, by = 0.01)) +
+  facet_wrap(~level) +
+  labs(
+    # Main title label
+    title = "Students Affected by School Closures in the Twin Cities Metro, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("Between 1991-2022, <b>", elementary.closed, " Elementary Schools, ", middle.closed, " Middle Schools, and ", high.closed, " High Schools</b> Closed As of 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Percent of Students (Race-Specific)",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+    size = "Number of School Closures",
+    color = "Race"
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_text(
+      family = "",
+      face = "bold",
+      size = 10,
+      color = "black"
+    ),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(
+    color = guide_legend(title.position = "top"),
+    size = guide_legend(title.position = "top"))
+
+```
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# Stacked bar charts
+sch.delt %>% 
+  filter(yr_close!=2022, year==yr_close) %>% 
+  rename(tot_member = "member") %>% 
+  mutate(
+    across(contains("tot"), floor),
+  ) %>% 
+  group_by(level, year) %>% 
+  summarise(
+    tot_member = sum(tot_member),
+    tot_nam = sum(tot_nam),
+    tot_asian = sum(tot_asian),
+    tot_hisp = sum(tot_hisp),
+    tot_black = sum(tot_black),
+    tot_tr = sum(tot_tr),
+    tot_white = sum(tot_white)) %>% 
+  select(level, year, contains("tot"), -tot_member) %>% 
+  pivot_longer(c(-level, -year), names_to = "type", values_to = "tot") %>% 
+  left_join(sch.closed %>% select(-type) %>% rename(sch.cl = "tot"), by = c("level", "year")) %>% 
+  arrange(level, year) %>% 
+  mutate(
+    type = case_when(type=="tot_asian" ~ "Asian",
+                     type=="tot_hisp" ~ "Hispanic/Latin@",
+                     type=="tot_black" ~ "Black/African American",
+                     type=="tot_member" ~ "All Students",
+                     type=="tot_white" ~ "White",
+                     type=="tot_nam" ~ "Native American",
+                     type=="tot_tr" ~ "Multiracial"),
+    level = factor(level, levels = lords)
+  ) %>% 
+  ungroup() %>% 
+  ggplot() +
+  aes(x = year, y = tot, fill = type) +
+  geom_col(position = position_fill()) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_fill_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#bdadea", "#e56b6f")) +
+  facet_wrap(~level) +
+  labs(
+    # Main title label
+    title = "Students Affected by School Closures in the Twin Cities Metro, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("Between 1991-2022, <b>", elementary.closed, " Elementary Schools, ", middle.closed, " Middle Schools, and ", high.closed, " High Schools</b> Closed As of 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Percent of Students Enrolled",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+
+##
 
 # Dissimilarity Index
 

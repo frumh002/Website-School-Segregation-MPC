@@ -89,5 +89,33 @@
     "title": "School Segregation Descriptive Report",
     "section": "Hispanic-White Dissimilarity Index",
     "text": "Hispanic-White Dissimilarity Index"
+  },
+  {
+    "objectID": "schoolsegmpc.html#number-of-schools-in-the-tc-metro",
+    "href": "schoolsegmpc.html#number-of-schools-in-the-tc-metro",
+    "title": "School Segregation Descriptive Report",
+    "section": "Number of Schools in the TC Metro",
+    "text": "Number of Schools in the TC Metro"
+  },
+  {
+    "objectID": "schoolsegmpc.html#number-of-schools-closed-and-opened-over-time",
+    "href": "schoolsegmpc.html#number-of-schools-closed-and-opened-over-time",
+    "title": "School Segregation Descriptive Report",
+    "section": "Number of Schools Closed and Opened Over Time",
+    "text": "Number of Schools Closed and Opened Over Time\n\n\n\n\n\n\nLimitations\n\n\n\nA school closure is defined as any school that had students for at least one year followed by no students in a subsequent year. A school opening is defined as a school that had no students after 1991 but enrolled students before 2022 for at least one year. Some schools reopen after being closed, and only their initial closure is reflected in this analysis."
+  },
+  {
+    "objectID": "schoolsegmpc.html#school-closures-by-district",
+    "href": "schoolsegmpc.html#school-closures-by-district",
+    "title": "School Segregation Descriptive Report",
+    "section": "School Closures by District",
+    "text": "School Closures by District\n\n\n\n\n\n\nOf Note\n\n\n\nIntermediate School District 287 comprised 26% of all school closures between 1991-2022."
+  },
+  {
+    "objectID": "schoolsegmpc.html#impact-of-school-closures-on-students-across-the-metro",
+    "href": "schoolsegmpc.html#impact-of-school-closures-on-students-across-the-metro",
+    "title": "School Segregation Descriptive Report",
+    "section": "Impact of School Closures on Students Across the Metro",
+    "text": "Impact of School Closures on Students Across the Metro\n\n\n\n\n\n\nLimitations\n\n\n\nAny estimates of counts of people affected by school closures will be imperfect because it’s hard to account for schools that closed and reopened multiple times. With that said, this analysis selects only the first instance a school closed to estimate the number of students impacted."
   }
 ]
