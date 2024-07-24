@@ -2045,6 +2045,12 @@ distr.dems %>%
 
 ## Number of Schools in the TC Metro
 
+:::{.callout-note}
+## School Level Imputations
+There is missing school level data for records before 2000. I imputed those school levels based on the level that was assigned to that school after 2000. It's uncommon, but some schools change levels over time. I imputed the school level based on the level that is most common over time for each missing school. This may create some innacuracies in school level analysis.
+:::
+
+
 ```{r schools_plot}
 #| echo: false
 #| fig-width: 12
