@@ -1465,7 +1465,7 @@ function fuseSearch(query, fuse, fuseOptions) {
 }
 </script>
 <meta name="quarto:offset" content="./">
-<link href="./schoolsegmpc.html" rel="next">
+<link href="./schoolsegdesc.html" rel="next">
 <script>const sectionChanged = new CustomEvent("quarto-sectionChanged", {
   detail: {},
   bubbles: true,
@@ -4474,8 +4474,14 @@ vertical-align: -.125em;
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./schoolsegmpc.html" class="sidebar-item-text sidebar-link">
+  <a href="./schoolsegdesc.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">School Segregation Descriptive Report</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./schoolsegindex.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">School Segregation Index Builds</span></a>
   </div>
 </li>
     </ul>
@@ -4484,7 +4490,13 @@ vertical-align: -.125em;
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#questions-for-the-group" id="toc-questions-for-the-group" class="nav-link active" data-scroll-target="#questions-for-the-group">Questions for the group</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -4519,8 +4531,21 @@ vertical-align: -.125em;
 
 </header>
 
+<section id="questions-for-the-group" class="level1">
+<h1>Questions for the group</h1>
+<ol type="1">
+<li>There seems to be conflicting information regarding what schools are metro vs. not?</li>
+<li>Do we want to add all charter and private schools or are we only focused on private schools?</li>
+<li>Some school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?</li>
+<li>The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)</li>
+<li>Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?</li>
+<li>Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?</li>
+<li>Which free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative.</li>
+<li>Is exposure index same as interaction index?</li>
+</ol>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -4760,7 +4785,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   <div class="nav-page nav-page-previous">
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./schoolsegmpc.html" class="pagination-link">
+      <a href="./schoolsegdesc.html" class="pagination-link">
         <span class="nav-page-text">School Segregation Descriptive Report</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>

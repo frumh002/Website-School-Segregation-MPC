@@ -20,7 +20,8 @@ website:
     contents: 
       - href: index.qmd
         text: Home
-      - schoolsegmpc.qmd
+      - schoolsegdesc.qmd
+      - schoolsegindex.qmd
     
 format:
   html:

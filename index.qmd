@@ -9,3 +9,13 @@ format:
     embed-resources: true
 ---
 
+# Questions for the group
+
+1. There seems to be conflicting information regarding what schools are metro vs. not?
+2. Do we want to add all charter and private schools or are we only focused on private schools?
+3. Some school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?
+4. The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)
+5. Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?
+6. Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?
+7. Which free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative.
+8. Is exposure index same as interaction index?

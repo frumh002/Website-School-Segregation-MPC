@@ -1,119 +1,119 @@
 [
   {
-    "objectID": "schoolsegmpc.html",
-    "href": "schoolsegmpc.html",
+    "objectID": "schoolsegindex.html",
+    "href": "schoolsegindex.html",
+    "title": "School Segregation Index Builds",
+    "section": "",
+    "text": "Interaction Index is a measure of…\n\\[Interaction = \\sum_{i=1}^n \\left( \\frac{B_i}{B} \\right) \\left( \\frac{W_i}{T_i} \\right)\\]\nWhere:\n\n\\(B_i\\) is the number of students of a particular racial group in a school \\(i\\).\n\\(B\\) is the total number of students of the same racial group in the entire district.\n\\(W_i\\) is the number of White students in school \\(i\\).\n\\(T_i\\) is the total student enrollment of the school district \\(i\\).\n\\(n\\) is the number of schools in the district.\n\n\n\n\n\n\n\n\n\n\nIsolation index is a measure of…\n\\[Isolation = \\sum_{i=1}^{n} \\left(\\frac{B_i}{B} \\right) \\left(\\frac{B{_i}}{T_i} \\right)\\] Where:\n\n\\(B_i\\) is the number of students of a particular racial group in a school \\(i\\).\n\\(B\\) is the total number of students of the same racial group in the entire district.\n\\(T_i\\) is the total student enrollment of the district \\(i\\).\n\\(n\\) is the number of schools in the district.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe Dissimilarity index is a measure of…\nDissimilarity index was calculated following Wang et al.’s, methods found here.\n\\[Dissimilarity = \\frac{1}{2} \\sum_{i=1}^{n} \\left|\\frac{b_i}{B}  - \\frac{w{_i}}{W} \\right|\\] Where:\n\n\\(b_i\\) is the number of students of a particular racial group in school \\(i\\).\n\\(B\\) is the total number of students of the same racial group enrolled in the district.\n\\(w_i\\) is the number of white students in school \\(i\\).\n\\(W\\) is the total number of white students enrolled in the district.\n\\(n\\) is the number of schools in the district."
+  },
+  {
+    "objectID": "schoolsegindex.html#exposure-index-same-as-interaction-index",
+    "href": "schoolsegindex.html#exposure-index-same-as-interaction-index",
+    "title": "School Segregation Index Builds",
+    "section": "",
+    "text": "Interaction Index is a measure of…\n\\[Interaction = \\sum_{i=1}^n \\left( \\frac{B_i}{B} \\right) \\left( \\frac{W_i}{T_i} \\right)\\]\nWhere:\n\n\\(B_i\\) is the number of students of a particular racial group in a school \\(i\\).\n\\(B\\) is the total number of students of the same racial group in the entire district.\n\\(W_i\\) is the number of White students in school \\(i\\).\n\\(T_i\\) is the total student enrollment of the school district \\(i\\).\n\\(n\\) is the number of schools in the district."
+  },
+  {
+    "objectID": "schoolsegindex.html#isolation-index",
+    "href": "schoolsegindex.html#isolation-index",
+    "title": "School Segregation Index Builds",
+    "section": "",
+    "text": "Isolation index is a measure of…\n\\[Isolation = \\sum_{i=1}^{n} \\left(\\frac{B_i}{B} \\right) \\left(\\frac{B{_i}}{T_i} \\right)\\] Where:\n\n\\(B_i\\) is the number of students of a particular racial group in a school \\(i\\).\n\\(B\\) is the total number of students of the same racial group in the entire district.\n\\(T_i\\) is the total student enrollment of the district \\(i\\).\n\\(n\\) is the number of schools in the district."
+  },
+  {
+    "objectID": "schoolsegindex.html#dissimilarity-index",
+    "href": "schoolsegindex.html#dissimilarity-index",
+    "title": "School Segregation Index Builds",
+    "section": "",
+    "text": "The Dissimilarity index is a measure of…\nDissimilarity index was calculated following Wang et al.’s, methods found here.\n\\[Dissimilarity = \\frac{1}{2} \\sum_{i=1}^{n} \\left|\\frac{b_i}{B}  - \\frac{w{_i}}{W} \\right|\\] Where:\n\n\\(b_i\\) is the number of students of a particular racial group in school \\(i\\).\n\\(B\\) is the total number of students of the same racial group enrolled in the district.\n\\(w_i\\) is the number of white students in school \\(i\\).\n\\(W\\) is the total number of white students enrolled in the district.\n\\(n\\) is the number of schools in the district."
+  },
+  {
+    "objectID": "schoolsegindex.html#exposure-index",
+    "href": "schoolsegindex.html#exposure-index",
+    "title": "School Segregation Index Builds",
+    "section": "Exposure Index",
+    "text": "Exposure Index"
+  },
+  {
+    "objectID": "schoolsegindex.html#isolation-index-1",
+    "href": "schoolsegindex.html#isolation-index-1",
+    "title": "School Segregation Index Builds",
+    "section": "Isolation Index",
+    "text": "Isolation Index\nIsolation index is a measure of…\n\\[Isolation = \\sum_{i=1}^{n} \\left(\\frac{B_i}{B} \\right) \\left(\\frac{B{_i}}{T_i} \\right)\\] Where:\n\n\\(B_i\\) is the number of students of a particular racial group in a school \\(i\\).\n\\(B\\) is the total number of students of the same racial group in the entire district.\n\\(T_i\\) is the total student enrollment of the district \\(i\\).\n\\(n\\) is the number of schools in the district."
+  },
+  {
+    "objectID": "schoolsegindex.html#normalized-exposure-index-1",
+    "href": "schoolsegindex.html#normalized-exposure-index-1",
+    "title": "School Segregation Index Builds",
+    "section": "Normalized Exposure Index",
+    "text": "Normalized Exposure Index"
+  },
+  {
+    "objectID": "schoolsegindex.html#dissimilarity-index-1",
+    "href": "schoolsegindex.html#dissimilarity-index-1",
+    "title": "School Segregation Index Builds",
+    "section": "Dissimilarity Index",
+    "text": "Dissimilarity Index\nThe Dissimilarity index is a measure of…\nDissimilarity index was calculated following Wang et al.’s, methods found here.\n\\[Dissimilarity = \\frac{1}{2} \\sum_{i=1}^{n} \\left|\\frac{b_i}{B}  - \\frac{w{_i}}{W} \\right|\\] Where:\n\n\\(b_i\\) is the number of students of a particular racial group in school \\(i\\).\n\\(B\\) is the total number of students of the same racial group enrolled in the district.\n\\(w_i\\) is the number of white students in school \\(i\\).\n\\(W\\) is the total number of white students enrolled in the district.\n\\(n\\) is the number of schools in the district."
+  },
+  {
+    "objectID": "schoolsegindex.html#information-theory-index",
+    "href": "schoolsegindex.html#information-theory-index",
+    "title": "School Segregation Index Builds",
+    "section": "Information Theory Index",
+    "text": "Information Theory Index"
+  },
+  {
+    "objectID": "schoolsegindex.html#difference-in-exposure-to-free-lunch-1",
+    "href": "schoolsegindex.html#difference-in-exposure-to-free-lunch-1",
+    "title": "School Segregation Index Builds",
+    "section": "Difference in Exposure to Free Lunch",
+    "text": "Difference in Exposure to Free Lunch"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
     "title": "School Segregation Descriptive Report",
     "section": "",
-    "text": "There seems to be conflicting information regarding what schools are metro vs. not?\nDo we want to add all charter and private schools or are we only focused on private schools?\nSome school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?\nThe total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)\nMany schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?\nHmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?\nWhich free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative."
+    "text": "Questions for the group\n\nThere seems to be conflicting information regarding what schools are metro vs. not?\nDo we want to add all charter and private schools or are we only focused on private schools?\nSome school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?\nThe total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)\nMany schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?\nHmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?\nWhich free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative.\nIs exposure index same as interaction index?"
   },
   {
-    "objectID": "schoolsegmpc.html#enrollment-breakdown-over-time",
-    "href": "schoolsegmpc.html#enrollment-breakdown-over-time",
-    "title": "School Segregation Descriptive Report",
-    "section": "Enrollment Breakdown Over Time",
-    "text": "Enrollment Breakdown Over Time"
-  },
-  {
-    "objectID": "schoolsegmpc.html#proportion-of-bipoc-students-by-metro-district",
-    "href": "schoolsegmpc.html#proportion-of-bipoc-students-by-metro-district",
-    "title": "School Segregation Descriptive Report",
-    "section": "Proportion of BIPOC Students by Metro District",
-    "text": "Proportion of BIPOC Students by Metro District"
-  },
-  {
-    "objectID": "schoolsegmpc.html#percent-of-bipoc-students-by-school-across-metro-districts",
-    "href": "schoolsegmpc.html#percent-of-bipoc-students-by-school-across-metro-districts",
-    "title": "School Segregation Descriptive Report",
-    "section": "Percent of BIPOC Students by School Across Metro Districts",
-    "text": "Percent of BIPOC Students by School Across Metro Districts"
-  },
-  {
-    "objectID": "schoolsegmpc.html#percent-of-metro-districts-bipoc-students-by-school",
-    "href": "schoolsegmpc.html#percent-of-metro-districts-bipoc-students-by-school",
-    "title": "School Segregation Descriptive Report",
-    "section": "Percent of Metro District’s BIPOC Students by School",
-    "text": "Percent of Metro District’s BIPOC Students by School"
-  },
-  {
-    "objectID": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-minneapolis-schools",
-    "href": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-minneapolis-schools",
-    "title": "School Segregation Descriptive Report",
-    "section": "Percent Change in BIPOC Student Representation Across Minneapolis Schools",
-    "text": "Percent Change in BIPOC Student Representation Across Minneapolis Schools"
-  },
-  {
-    "objectID": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-saint-paul-schools",
-    "href": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-saint-paul-schools",
-    "title": "School Segregation Descriptive Report",
-    "section": "Percent Change in BIPOC Student Representation Across Saint Paul Schools",
-    "text": "Percent Change in BIPOC Student Representation Across Saint Paul Schools"
-  },
-  {
-    "objectID": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-anoka-hennepin-schools",
-    "href": "schoolsegmpc.html#percent-change-in-bipoc-student-representation-across-anoka-hennepin-schools",
-    "title": "School Segregation Descriptive Report",
-    "section": "Percent Change in BIPOC Student Representation Across Anoka-Hennepin Schools",
-    "text": "Percent Change in BIPOC Student Representation Across Anoka-Hennepin Schools"
-  },
-  {
-    "objectID": "schoolsegmpc.html#racial-composition-and-economic-segregation",
-    "href": "schoolsegmpc.html#racial-composition-and-economic-segregation",
+    "objectID": "schoolsegdesc.html#racial-composition-and-economic-segregation",
+    "href": "schoolsegdesc.html#racial-composition-and-economic-segregation",
     "title": "School Segregation Descriptive Report",
     "section": "Racial Composition and Economic Segregation",
     "text": "Racial Composition and Economic Segregation"
   },
   {
-    "objectID": "schoolsegmpc.html#racial-composition-by-district-in-twin-cities-metro",
-    "href": "schoolsegmpc.html#racial-composition-by-district-in-twin-cities-metro",
+    "objectID": "schoolsegdesc.html#racial-composition-by-district-in-twin-cities-metro",
+    "href": "schoolsegdesc.html#racial-composition-by-district-in-twin-cities-metro",
     "title": "School Segregation Descriptive Report",
     "section": "Racial Composition by District in Twin Cities Metro",
     "text": "Racial Composition by District in Twin Cities Metro"
   },
   {
-    "objectID": "schoolsegmpc.html#black-white-dissimilarity-index",
-    "href": "schoolsegmpc.html#black-white-dissimilarity-index",
-    "title": "School Segregation Descriptive Report",
-    "section": "Black-White Dissimilarity Index",
-    "text": "Black-White Dissimilarity Index"
-  },
-  {
-    "objectID": "schoolsegmpc.html#asian-white-dissimilarity-index",
-    "href": "schoolsegmpc.html#asian-white-dissimilarity-index",
-    "title": "School Segregation Descriptive Report",
-    "section": "Asian-White Dissimilarity Index",
-    "text": "Asian-White Dissimilarity Index"
-  },
-  {
-    "objectID": "schoolsegmpc.html#hispanic-white-dissimilarity-index",
-    "href": "schoolsegmpc.html#hispanic-white-dissimilarity-index",
-    "title": "School Segregation Descriptive Report",
-    "section": "Hispanic-White Dissimilarity Index",
-    "text": "Hispanic-White Dissimilarity Index"
-  },
-  {
-    "objectID": "schoolsegmpc.html#number-of-schools-in-the-tc-metro",
-    "href": "schoolsegmpc.html#number-of-schools-in-the-tc-metro",
+    "objectID": "schoolsegdesc.html#number-of-schools-in-the-tc-metro",
+    "href": "schoolsegdesc.html#number-of-schools-in-the-tc-metro",
     "title": "School Segregation Descriptive Report",
     "section": "Number of Schools in the TC Metro",
     "text": "Number of Schools in the TC Metro"
   },
   {
-    "objectID": "schoolsegmpc.html#number-of-schools-closed-and-opened-over-time",
-    "href": "schoolsegmpc.html#number-of-schools-closed-and-opened-over-time",
+    "objectID": "schoolsegdesc.html#number-of-schools-closed-and-opened-over-time",
+    "href": "schoolsegdesc.html#number-of-schools-closed-and-opened-over-time",
     "title": "School Segregation Descriptive Report",
     "section": "Number of Schools Closed and Opened Over Time",
     "text": "Number of Schools Closed and Opened Over Time\n\n\n\n\n\n\nLimitations\n\n\n\nA school closure is defined as any school that had students for at least one year followed by no students in a subsequent year. A school opening is defined as a school that had no students after 1991 but enrolled students before 2022 for at least one year. Some schools reopen after being closed, and only their initial closure is reflected in this analysis."
   },
   {
-    "objectID": "schoolsegmpc.html#school-closures-by-district",
-    "href": "schoolsegmpc.html#school-closures-by-district",
+    "objectID": "schoolsegdesc.html#school-closures-by-district",
+    "href": "schoolsegdesc.html#school-closures-by-district",
     "title": "School Segregation Descriptive Report",
     "section": "School Closures by District",
     "text": "School Closures by District\n\n\n\n\n\n\nOf Note\n\n\n\nIntermediate School District 287 comprised 26% of all school closures between 1991-2022."
   },
   {
-    "objectID": "schoolsegmpc.html#impact-of-school-closures-on-students-across-the-metro",
-    "href": "schoolsegmpc.html#impact-of-school-closures-on-students-across-the-metro",
+    "objectID": "schoolsegdesc.html#impact-of-school-closures-on-students-across-the-metro",
+    "href": "schoolsegdesc.html#impact-of-school-closures-on-students-across-the-metro",
     "title": "School Segregation Descriptive Report",
     "section": "Impact of School Closures on Students Across the Metro",
     "text": "Impact of School Closures on Students Across the Metro\n\n\n\n\n\n\nLimitations\n\n\n\nAny estimates of counts of people affected by school closures will be imperfect because it’s hard to account for schools that closed and reopened multiple times. With that said, this analysis selects only the first instance a school closed to estimate the number of students impacted."
