@@ -8,7 +8,6 @@
 
 <meta name="author" content="Mateo Frumholtz">
 <meta name="author" content="Sara Garcia">
-<meta name="dcterms.date" content="2024-07-22">
 
 <title>MPC School Segregation Collaborative Report - School Segregation Descriptive Report</title>
 <style>
@@ -4475,13 +4474,31 @@ vertical-align: -.125em;
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./schoolsegdesc.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">School Segregation Descriptive Report</span></a>
+ <span class="menu-text">TC School Demographics Descriptive Report</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./schoolsegindex.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">School Segregation Index Builds</span></a>
+ <span class="menu-text">School Segregation Index Descriptive Report</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./schoolclosures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Administrative School Closures Descriptive Report</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ecological.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">TC School Segregation Ecological Analysis</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./suppmaterials.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Supplementary Materials</span></a>
   </div>
 </li>
     </ul>
@@ -4521,7 +4538,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 22, 2024</p>
+      <p class="date">Invalid Date</p>
     </div>
   </div>
   
@@ -4535,14 +4552,40 @@ vertical-align: -.125em;
 <h1>Questions for the group</h1>
 <ol type="1">
 <li>There seems to be conflicting information regarding what schools are metro vs. not?</li>
-<li>Do we want to add all charter and private schools or are we only focused on private schools?</li>
-<li>Some school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?</li>
-<li>The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)</li>
-<li>Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?</li>
-<li>Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?</li>
-<li>Which free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative.</li>
-<li>Is exposure index same as interaction index?</li>
 </ol>
+<ul>
+<li>MDE considers any school in the 7 county metro area to be metro.</li>
+</ul>
+<ol start="2" type="1">
+<li>Some school districts have common names (St. Paul Public School District vs. Saint Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?</li>
+</ol>
+<ul>
+<li>Look at NCES7ID to make sure the same</li>
+</ul>
+<ol start="3" type="1">
+<li>The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)</li>
+</ol>
+<ul>
+<li>Yes</li>
+</ul>
+<ol start="4" type="1">
+<li>Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?</li>
+</ol>
+<ul>
+<li>Flag those that you are imputing that have changing school levels. Do a random sample of 10 schools. Look at ed opportunity for school level data missingness and also the 86-22 school dataset on google drive.</li>
+</ul>
+<ol start="5" type="1">
+<li>Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) can we correct these instances?</li>
+</ol>
+<ul>
+<li>Look at MDE’s data to correct these instances</li>
+</ul>
+<ol start="6" type="1">
+<li>Which free/reduced lunch/measure do we use? Manual or the imputed values? Manual is more conservative.</li>
+</ol>
+<ul>
+<li>Use imputed</li>
+</ul>
 
 
 </section>
@@ -4575,58 +4618,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     icon: icon
   };
   anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
-      }
-    }
-    return false;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  });
   function tippyHover(el, contentFn) {
     const config = {
       allowHTML: true,
@@ -4786,7 +4777,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   </div>
   <div class="nav-page nav-page-next">
       <a href="./schoolsegdesc.html" class="pagination-link">
-        <span class="nav-page-text">School Segregation Descriptive Report</span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text">TC School Demographics Descriptive Report</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
