@@ -3,7 +3,7 @@ title: "School Segregation Descriptive Report"
 author: 
   - Mateo Frumholtz
   - Sara Garcia
-date: 07-22-2024
+date: "`r Sys.Date()`"
 format:
   html:
     embed-resources: true
@@ -12,10 +12,14 @@ format:
 # Questions for the group
 
 1. There seems to be conflicting information regarding what schools are metro vs. not?
-2. Do we want to add all charter and private schools or are we only focused on private schools?
-3. Some school districts have common names (St. Paul Public School District vs. Sain Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?
-4. The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)
-5. Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?
-6. Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) - can we correct these instances?
-7. Which free/reduced lunch/meausre do we use? Manual or the imputed values? Manual is more conservative.
-8. Is exposure index same as interaction index?
+- MDE considers any school in the 7 county metro area to be metro.
+2. Some school districts have common names (St. Paul Public School District vs. Saint Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?
+- Look at NCES7ID to make sure the same
+3. The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)
+- Yes
+4. Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?
+- Flag those that you are imputing that have changing school levels. Do a random sample of 10 schools. Look at ed opportunity for school level data missingness and also the 86-22 school dataset on google drive. 
+5. Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) can we correct these instances?
+- Look at MDE's data to correct these instances
+6. Which free/reduced lunch/measure do we use? Manual or the imputed values? Manual is more conservative.
+- Use imputed

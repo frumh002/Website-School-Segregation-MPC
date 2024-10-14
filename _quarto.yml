@@ -20,14 +20,18 @@ website:
     contents: 
       - href: index.qmd
         text: Home
+      - cbsademographics.qmd
       - schoolsegdesc.qmd
       - schoolsegindex.qmd
+      - schoolclosures.qmd
+      - ecological.qmd
+      - suppmaterials.qmd
     
 format:
   html:
     theme:
       light: [cosmo, theme.scss]
-    code-copy: true
+    code-copy: false
     code-overflow: wrap
     toc: true
     

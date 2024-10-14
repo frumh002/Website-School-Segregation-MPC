@@ -1,0 +1,259 @@
+---
+title: "School Segregation Ecological Analysis"
+author: 
+  - Mateo Frumholtz
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+toc: true
+execute:
+  warning: false
+  error: false
+---
+
+
+```{r prep}
+#| echo: false
+#| include: false
+
+rm(list = ls())
+
+# Install Needed Packages -------------------------------------------------
+
+library(tidyverse)
+library(readxl)
+library(summarytools)
+library(plotly)
+library(ggtext)
+library(gt)
+library(gtExtras)
+library(segregation)
+
+# Metro Prep ----------------------------------------------------------
+# Metro districts were compiled from the list of metro school districts in the 2021 MDE Public Enrollment File (called FY2021 MDE Enrollment)
+metro.districts2 <- c("Anoka-Hennepin School District",           
+                      "Anoka-Hennepin Public School District", # Not present after normalized
+                      "Belle Plaine Public School District",      
+                      "Bloomington Public School District",      
+                      "Brooklyn Center School District",          
+                      "Buffalo-Hanover-Montrose Public Schools", # Not present after normalized
+                      "Buffalo-Hanover-Montrose Schools",         
+                      "Burnsville", # Not present after normalized                              
+                      "Burnsville Public School District", # Not present after normalized        
+                      "Burnsville-Eagan-Savage Schools",         
+                      "Centennial Public School District",        
+                      "Central Public School District", # Not present after normalized          
+                      "Chisago Lakes School District",            
+                      "Columbia Heights Public School District", 
+                      "Delano Public School District",            
+                      "Eastern Carver County Public School",     
+                      "Eden Prairie", # Not present after normalized                             
+                      "Eden Prairie Public School District",     
+                      "Edina Public School District",                                    
+                      "Elk River Public School District",                               
+                      "Farmington Public School District",        
+                      "Forest Lake Public School District",      
+                      "Fridley Public School District",           
+                      "Hastings Public School District",         
+                      "Hopkins Public School District",           
+                      "Inver Grove Heights Schools",             
+                      "Jordan Public School District",            
+                      "Lakeville Area Schools",                  
+                      "Lakeville Public School District", # Not present after normalized         
+                      "Le Sueur-Henderson School District",      
+                      "Mahtomedi Public School District",         
+                      "Minneapolis Public School District",      
+                      "Minnetonka Public School District",        
+                      "Mounds View Public School District",      
+                      "New Prague Area Schools",                  
+                      "North St. Paul-Maplewood Oakdale",
+                      "Northfield Public School District",        
+                      "Orono Public School District",            
+                      "Osseo Public School District",             
+                      "Prior Lake-Savage Area Schools",          
+                      "Randolph Public School District",          
+                      "Richfield Public School District",        
+                      "Robbinsdale Public School District",       
+                      "Rockford Public School District",         
+                      "Rosemount-Apple Valley-Eagan",             
+                      "Roseville Public School District",  
+                      "Saint Paul Public Schools",
+                      "Shakopee Public School District",          
+                      "South St. Paul Public School District",   
+                      "South Washington County Schools",          
+                      "Spring Lake Park Public Schools",         
+                      "St. Anthony-New Brighton Schools",         
+                      "St. Francis Area Schools",                
+                      "St. Louis Park Public School District",    
+                      "St. Michael-Albertville Schools",         
+                      "St. Paul Public School District", # Not present after normalized          
+                      "Stillwater Area Public Schools",          
+                      "Waconia Public School District",           
+                      "Watertown-Mayer Public School District",  
+                      "Wayzata Public School District",           
+                      "West St. Paul-Mendota Heights-Eagan",     
+                      "Westonka Public School District",          
+                      "White Bear Lake School District")
+
+# Import Datasets ---------------------------------------------------------
+df <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/MN_Stanford_NCES_data 91-22.xlsx", sheet = "LISDdata")
+# Creating a list of the metro district ID's by matching the district names so we can filter and match district segregation data to school closures
+metro.leaid <- df %>% 
+  filter(leaname %in% metro.districts2) %>% 
+  select(leaid) %>% 
+  unique() %>% 
+  pull(leaid)
+# Correct for missing school levels
+school.levels <- df %>% 
+  group_by(schoolname, leaname, level) %>% 
+  summarise(tot= n()) %>% 
+  arrange(schoolname, desc(tot)) %>% 
+  slice_head() %>% 
+  select(-tot)
+# Correct for changing district names by choosing the most recent district name
+# We are doing two things: the first is choosing the most recent names for every district id
+# the second is using the district name that appears the most times for each id that uses multiple names
+# across NCES in a year. For ex. Blue Earth uses two different names in 1996 with the same id. This code chooses whichever
+# has the most instances or the one that comes first alphabetically in the case that they have the same count. This should correct around 7% of district names.
+distr.names <- df %>% 
+  select(leaname, leaid, year) %>% 
+  group_by(leaid) %>% 
+  mutate(yr = max(year)) %>% 
+  filter(year==yr) %>% 
+  group_by(leaid, leaname) %>% 
+  summarise(n = n()) %>% 
+  group_by(leaid) %>% 
+  arrange(leaid, desc(n)) %>% 
+  slice_head() %>% 
+  select(-n) %>% 
+  rename(yr_leaname = "leaname")
+
+# Creating clean school data with normalized school levels and district names
+schools <- df %>% 
+  # This chunk of code just completes the levels because NCES only collected levels after the 2000's
+  left_join(school.levels, by = c("schoolname", "leaname"), suffix = c("", ".df1")) %>%
+  select(-level) %>% 
+  rename(level = "level.df1") %>% 
+  left_join(distr.names, by = "leaid") %>% 
+  select(-leaname) %>% 
+  rename(leaname = "yr_leaname")
+rm(df)
+
+# Bringing in ecologial dataset and administrative school segregation data
+ecol <- read.csv("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/Merged Ecological Dataset.csv")
+admin <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/Stanford National Segregation Admin District 1991-2022.xlsx")
+mdex <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/NCES_MDE_lookup.xlsx") %>% 
+  select(ncessch = "NCESID", DTSCHID = "DTSCHIDb")
+
+```
+
+:::{.callout-note}
+## Segregation Metrics
+Unless otherwise noted, the segregation metric used across most of these analysis is the Normalized Exposure Index. Refer to the School Segregation Index Descriptive Report tab for more information on the various indices. 
+:::
+
+
+# Teachers
+
+```{r teach_prep}
+#| include: false
+
+pelsb <- ecol %>% 
+  # Selecting and renaming variables
+  select(
+    DTSCHID, leaid, year,
+    teach_member = "TotalFTE", 
+    teach_asian_female = "AsianFemale", teach_asian_male = "AsianMale", teach_asian_und = "AsianUndeclared",
+    teach_nam_female = "AmericanIndianFemale", teach_nam_male = "AmericanIndianMale", teach_name_und = "AmericanIndianUndeclared",
+    teach_hisp_female = "HispanicFemale", teach_hisp_male = "HispanicMale", teach_hisp_und = "HispanicUndeclared",
+    teach_black_female = "BlackFemale", teach_black_male = "BlackMale", teach_black_und = "BlackUndeclared",
+    teach_api_female = "HawaiianPacificIslanderFemale", teach_api_male = "HawaiianPacificIslanderMale", teach_api_und = "HawaiianPacificIslanderUndeclared",
+    teach_tr_female = "MultiFemale", teach_tr_male = "MultiMale", teach_tr_und = "MultiUndeclared",
+    teach_new = "NewTeacher", AverageYearsofExperience, Experience1.5Years, Experience6.10Years, Experience11.15Years, Experience16.20Years, Experience21.25Years, Experience26.30Years, Experience31PlusYears, 
+    ExperienceLessThanBA = "LessThanBA", ExperienceBA = "BA", ExperienceMA = "MA", ExperiencePhD = "PhD") %>% 
+  # Merging with crosswalk to get the right format of nces school id
+  left_join(mdex, by = "DTSCHID") %>% 
+  mutate(leaid = as.character(leaid)) %>% 
+  # There are many duplicate rows so we only want to keep one instance of each
+  distinct()
+
+teach <- schools %>% 
+  left_join(admin, by = c("leaid", "year")) %>% 
+  left_join(pelsb, by = c("ncessch", "leaid", "year")) %>% 
+  mutate(
+    across(starts_with("teach_"), floor),
+    across(starts_with("Experience"), floor),
+  ) %>% 
+  rowwise() %>% 
+  mutate(
+    teach_nam = teach_nam_female + teach_nam_male + teach_name_und,
+    teach_hisp = teach_hisp_female + teach_hisp_male + teach_hisp_und,
+    teach_black = teach_black_female + teach_black_male + teach_black_und,
+    teach_api = teach_api_female + teach_api_male + teach_api_und,
+    teach_asian = teach_asian_female + teach_asian_male + teach_asian_und,
+    teach_tr = teach_tr_female + teach_tr_male + teach_tr_und,
+    teach_bipoc = teach_nam + teach_hisp + teach_black + teach_api + teach_asian + teach_tr
+  ) %>% 
+  group_by(year, leaid) %>% 
+  mutate(
+    perc_rank_black = percent_rank(perblack),
+    perc_rank_hisp = percent_rank(perhisp),
+    perc_rank_frlunch = percent_rank(perflunch),
+    q_black = case_when(perc_rank_black >= 0.75 ~ "Q1",
+                        between(perc_rank_black, 0.5, 0.7499) ~ "Q2",
+                        between(perc_rank_black, 0.25, 0.499) ~ "Q3",
+                        perc_rank_black < 0.25 ~ "Q4"),
+    q_hisp = case_when(perc_rank_hisp >= 0.75 ~ "Q1",
+                       between(perc_rank_hisp, 0.5, 0.7499) ~ "Q2",
+                       between(perc_rank_hisp, 0.25, 0.499) ~ "Q3",
+                       perc_rank_hisp < 0.25 ~ "Q4"),
+    q_frlunch = case_when(perc_rank_frlunch >= 0.75 ~ "Q1",
+                          between(perc_rank_frlunch, 0.5, 0.7499) ~ "Q2",
+                          between(perc_rank_frlunch, 0.25, 0.499) ~ "Q3",
+                          perc_rank_frlunch < 0.25 ~ "Q4")
+  )
+
+```
+
+## How does the teacher change over time?
+
+```{r}
+
+ggplot(teach) +
+  aes(x= year, y = AverageYearsofExperience, group = year) +
+  geom_boxplot()
+
+ggplot(teach) +
+  aes(x= q_black, y = AverageYearsofExperience, group = q_black) +
+  geom_boxplot()
+
+ggplot(teach) +
+  aes(x= q_hisp, y = AverageYearsofExperience, group = q_hisp) +
+  geom_boxplot()
+
+ggplot(teach) +
+  aes(x= q_frlunch, y = AverageYearsofExperience, group = q_frlunch) +
+  geom_boxplot()
+
+ggplot(teach) +
+  aes(x = perfrlunch, y = AverageYearsofExperience) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+
+
+```
+
+
+## Do more segregated schools have teachers with less experience or education?
+
+```{r}
+
+
+
+```
+
+# MCA/Testing
+
+

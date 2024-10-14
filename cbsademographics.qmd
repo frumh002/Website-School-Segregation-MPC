@@ -1,0 +1,275 @@
+---
+title: "TC School Segregation Ecological Analysis"
+author: 
+  - Mateo Frumholtz
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+toc: true
+execute:
+  warning: false
+  error: false
+---
+
+# How do the Twin Cities demographics compare to other cities across the US?
+
+```{r cbsa_dems_prep}
+#| echo: false
+#| include: false
+
+tidy.cbsas <- c("Atlanta-Sandy Springs-Roswell, GA Metro Area",
+                "Boston-Cambridge-Newton, MA-NH Metro Area",
+                "Charlotte-Concord-Gastonia, NC-SC Metro Area",
+                "Chicago-Naperville-Elgin, IL-IN-WI Metro Area",
+                "Dallas-Fort Worth-Arlington, TX Metro Area", 
+                "Denver-Aurora-Broomfield, CO Metro Area", # CBSA Ed is Centennial instead of Broomfield
+                "Detroit-Warren-Dearborn, MI Metro Area",
+                "Houston-The Woodlands-Sugar Land, TX Metro Area", #CBSA Ed is Pasadena instead of Sugar Land
+                "Los Angeles-Long Beach-Anaheim, CA Metro Area",
+                "Miami-Fort Lauderdale-West Palm Beach, FL Metro Area",
+                "Minneapolis-St. Paul-Bloomington, MN-WI Metro Area",
+                "New York-Newark-Jersey City, NY-NJ-PA Metro Area",
+                "Philadelphia-Camden-Wilmington, PA-NJ-DE-MD Metro Area",
+                "San Antonio-New Braunfels, TX Metro Area",
+                "San Diego-Chula Vista-Carlsbad, CA Metro Area",
+                "San Francisco-Oakland-Fremont, CA Metro Area",
+                "Seattle-Tacoma-Bellevue, WA Metro Area",
+                "Phoenix-Mesa-Chandler, AZ Metro Area", # Scottsdale might be better as it has more data
+                "Riverside-San Bernardino-Ontario, CA Metro Area",
+                "Washington-Arlington-Alexandria, DC-VA-MD-WV Metro Area")
+
+vars <- c("B01001_003", #summary var male 0-4
+          "B01001_004", #summary var male 5-9
+          "B01001_005", #summary var male 10-14
+          "B01001_006", #summary var male 15-17
+          "B01001_007", #summary var male 18-19
+          "B01001H_003",
+          "B01001H_004",
+          "B01001H_005",
+          "B01001H_006",
+          "B01001H_007",
+          "B01001B_003",
+          "B01001B_004",
+          "B01001B_005",
+          "B01001B_006",
+          "B01001B_007",
+          "B01001C_003",
+          'B01001C_004',
+          "B01001C_005",
+          "B01001C_006",
+          "B01001C_007",
+          "B01001D_003",
+          "B01001D_004",
+          "B01001D_005",
+          "B01001D_006",
+          "B01001D_007",
+          "B01001E_003",
+          "B01001E_004",
+          "B01001E_005",
+          "B01001E_006",
+          "B01001E_007",
+          "B01001G_003",
+          "B01001G_004",
+          "B01001G_005",
+          "B01001G_006",
+          "B01001G_007",
+          "B01001I_003",
+          "B01001I_004",
+          "B01001I_005",
+          "B01001I_006",
+          "B01001I_007",
+          "B01001_027", #summary var female 0-4
+          "B01001_028", #summary var female 5-9
+          "B01001_029", #summary var female 10-14
+          "B01001_030", #summary var female 15-17
+          "B01001_031", #summary var female 18-19
+          "B01001H_018",
+          "B01001H_019",
+          "B01001H_020",
+          "B01001H_021",
+          "B01001H_022",
+          "B01001B_018",
+          "B01001B_019",
+          "B01001B_020",
+          "B01001B_021",
+          "B01001B_022",
+          "B01001C_018",
+          "B01001C_019",
+          "B01001C_020",
+          "B01001C_021",
+          "B01001C_022",
+          "B01001D_018",
+          "B01001D_019",
+          "B01001D_020",
+          "B01001D_021",
+          "B01001D_022",
+          "B01001E_018",
+          "B01001E_019",
+          "B01001E_020",
+          "B01001E_021",
+          "B01001E_022",
+          "B01001G_018",
+          "B01001G_019",
+          "B01001G_020",
+          "B01001G_021",
+          "B01001G_022",
+          "B01001I_018",
+          "B01001I_019",
+          "B01001I_020",
+          "B01001I_021",
+          "B01001I_022")
+
+descripts <- c("m_u5_tot",
+               "m_59_tot",
+               "m_1014_tot",
+               "m_1517_tot",
+               "m_1819_tot",
+               "m_u5_w",
+               "m_59_w",
+               "m_1014_w",
+               "m_1517_w",
+               "m_1819_w",
+               "m_u5_b",
+               "m_59_b",
+               "m_1014_b",
+               "m_1517_b",
+               "m_1819_b",
+               "m_u5_ai",
+               "m_59_ai",
+               "m_1014_ai",
+               "m_1517_ai",
+               "m_1819_ai",
+               "m_u5_as",
+               "m_59_as",
+               "m_1014_as",
+               "m_1517_as",
+               "m_1819_as",
+               "m_u5_nh",
+               "m_59_nh",
+               "m_1014_nh",
+               "m_1517_nh",
+               "m_1819_nh",
+               "m_u5_tr",
+               "m_59_tr",
+               "m_1014_tr",
+               "m_1517_tr",
+               "m_1819_tr",
+               "m_u5_h",
+               "m_59_h",
+               "m_1014_h",
+               "m_1517_h",
+               "m_1819_h",
+               "f_u5_tot",
+               "f_59_tot",
+               "f_1014_tot",
+               "f_1517_tot",
+               "f_1819_tot",
+               "f_u5_w",
+               "f_59_w",
+               "f_1014_w",
+               "f_1517_w",
+               "f_1819_w",
+               "f_u5_b",
+               "f_59_b",
+               "f_1014_b",
+               "f_1517_b",
+               "f_1819_b",
+               "f_u5_ai",
+               "f_59_ai",
+               "f_1014_ai",
+               "f_1517_ai",
+               "f_1819_ai",
+               "f_u5_as",
+               "f_59_as",
+               "f_1014_as",
+               "f_1517_as",
+               "f_1819_as",
+               "f_u5_nh",
+               "f_59_nh",
+               "f_1014_nh",
+               "f_1517_nh",
+               "f_1819_nh",
+               "f_u5_tr",
+               "f_59_tr",
+               "f_1014_tr",
+               "f_1517_tr",
+               "f_1819_tr",
+               "f_u5_h",
+               "f_59_h",
+               "f_1014_h",
+               "f_1517_h",
+               "f_1819_h")
+
+# acs_dem_vars <- as.data.frame(cbind(vars, descripts))
+# 
+# years <- 2005:2019
+# names(years) <- years
+# 
+# race_by_year <- map_dfr(years, ~{
+#   get_acs(
+#     geography = "cbsa",
+#     variables = vars,
+#     survey = "acs1",
+#     year = .x
+#   )
+# }, .id = "year")
+# 
+# acs_dem <- race_by_year %>% 
+#   filter(NAME %in% tidy.cbsas) %>% 
+#   left_join(acs_dem_vars, by = c("variable" = "vars")) %>% 
+#   select(-variable, -moe) %>% 
+#   pivot_wider(names_from = descripts, values_from = estimate) %>% 
+#   mutate(
+#     u19_tot = rowSums(select(., ends_with("_tot"))),
+#     u19_b = rowSums(select(., ends_with("_b"))),
+#     u19_w = rowSums(select(., ends_with("_w"))),
+#     u19_h = rowSums(select(., ends_with("_h"))),
+#     u19_as = rowSums(select(., ends_with("_as"))),
+#     u19_ai = rowSums(select(., ends_with("_ai"))),
+#     u19_tr = rowSums(select(., ends_with("_tr"))),
+#     u19_nh = rowSums(select(., ends_with("_nh")))
+#   ) %>% 
+#   rowwise() %>% 
+#   mutate(u19_bipoc = sum(u19_b, u19_h, u19_as, u19_ai, u19_tr, u19_nh, na.rm = t)) %>% 
+#   select(year, GEOID, NAME, u19_tot, u19_b, u19_w, u19_h, u19_as, u19_ai, u19_tr, u19_nh, u19_bipoc) %>% 
+#   pivot_longer(c(-year, -GEOID, -NAME, -u19_tot), names_to = "type", values_to = "estimate") %>% 
+#   mutate(
+#     perc = estimate/u19_tot,
+#     mpls = case_when(NAME=="Minneapolis-St. Paul-Bloomington, MN-WI Metro Area" ~ "Minneapolis-St. Paul-Bloomington, MN-WI Metro Area",
+#                      TRUE ~ c("Other")))
+
+```
+
+```{r cbsa_dems_plot}
+#| echo: false
+
+# ggplot() +
+#   aes(x = year, y = perc, color = NAME, group = NAME) +
+#   geom_point(
+#     data = acs_dem %>% 
+#       filter(mpls=="Other"),
+#     aes(x = year, y = perc, color = mpls, group = NAME)
+#   ) +
+#   geom_line(
+#     data = acs_dem %>% 
+#       filter(mpls=="Other"),
+#     aes(x = year, y = perc, color = mpls, group = NAME)
+#   ) +
+#   geom_point(
+#     data = acs_dem %>% 
+#       filter(mpls!="Other"),
+#     aes(x = year, y = perc, color = mpls, group = NAME)
+#   ) +
+#   geom_line(
+#     data = acs_dem %>% 
+#       filter(mpls!="Other"),
+#     aes(x = year, y = perc, color = mpls, group = NAME)
+#   ) +
+#   scale_color_manual(values = c("#FF0010FF", "grey70")) +
+#   facet_wrap(~type) +
+#   scale_y_continuous(limits = c(0, 1), 
+#                      labels = scales::percent_format(accuracy = 1))
+
+```
+

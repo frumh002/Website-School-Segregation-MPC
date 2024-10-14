@@ -1,0 +1,1215 @@
+---
+title: "Administrative School Closures Descriptive Report"
+author: 
+  - Mateo Frumholtz
+date: "`r Sys.Date()`"
+format:
+  html:
+    embed-resources: true
+toc: true
+execute:
+  warning: false
+  error: false
+---
+
+```{r prep}
+#| echo: false
+#| include: false
+
+rm(list=ls())
+
+# Install Needed Packages -------------------------------------------------
+
+library(tidyverse)
+library(readxl)
+library(summarytools)
+library(gt)
+library(ggtext)
+library(gt)
+library(gtExtras)
+library(ggstream)
+library(ggpmisc)
+
+# Prep --------------------------------------------------------------------
+# This second list comes from this list: https://education.mn.gov/mdeprod/groups/educ/documents/basic/mdaw/mdaw/~edisp/000803.pdf
+metro.districts2 <- c("Anoka-Hennepin School District",           
+                      "Anoka-Hennepin Public School District", # Not present after normalized
+                      "Belle Plaine Public School District",      
+                      "Bloomington Public School District",      
+                      "Brooklyn Center School District",          
+                      "Buffalo-Hanover-Montrose Public Schools", # Not present after normalized
+                      "Buffalo-Hanover-Montrose Schools",         
+                      "Burnsville", # Not present after normalized                              
+                      "Burnsville Public School District", # Not present after normalized        
+                      "Burnsville-Eagan-Savage Schools",         
+                      "Centennial Public School District",        
+                      "Central Public School District", # Not present after normalized          
+                      "Chisago Lakes School District",            
+                      "Columbia Heights Public School District", 
+                      "Delano Public School District",            
+                      "Eastern Carver County Public School",     
+                      "Eden Prairie", # Not present after normalized                             
+                      "Eden Prairie Public School District",     
+                      "Edina Public School District",                                    
+                      "Elk River Public School District",                               
+                      "Farmington Public School District",        
+                      "Forest Lake Public School District",      
+                      "Fridley Public School District",           
+                      "Hastings Public School District",         
+                      "Hopkins Public School District",           
+                      "Inver Grove Heights Schools",             
+                      "Jordan Public School District",            
+                      "Lakeville Area Schools",                  
+                      "Lakeville Public School District", # Not present after normalized         
+                      "Le Sueur-Henderson School District",      
+                      "Mahtomedi Public School District",         
+                      "Minneapolis Public School District",      
+                      "Minnetonka Public School District",        
+                      "Mounds View Public School District",      
+                      "New Prague Area Schools",                  
+                      "North St. Paul-Maplewood Oakdale",
+                      "Northfield Public School District",        
+                      "Orono Public School District",            
+                      "Osseo Public School District",             
+                      "Prior Lake-Savage Area Schools",          
+                      "Randolph Public School District",          
+                      "Richfield Public School District",        
+                      "Robbinsdale Public School District",       
+                      "Rockford Public School District",         
+                      "Rosemount-Apple Valley-Eagan",             
+                      "Roseville Public School District",  
+                      "Saint Paul Public Schools",
+                      "Shakopee Public School District",          
+                      "South St. Paul Public School District",   
+                      "South Washington County Schools",          
+                      "Spring Lake Park Public Schools",         
+                      "St. Anthony-New Brighton Schools",         
+                      "St. Francis Area Schools",                
+                      "St. Louis Park Public School District",    
+                      "St. Michael-Albertville Schools",         
+                      "St. Paul Public School District", # Not present after normalized          
+                      "Stillwater Area Public Schools",          
+                      "Waconia Public School District",           
+                      "Watertown-Mayer Public School District",  
+                      "Wayzata Public School District",           
+                      "West St. Paul-Mendota Heights-Eagan",     
+                      "Westonka Public School District",          
+                      "White Bear Lake School District")
+
+# Import Datasets ---------------------------------------------------------
+df <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/MN_Stanford_NCES_data 91-22.xlsx", sheet = "LISDdata")
+# Creating a list of the metro district ID's by matching the district names so we can filter and match district segregation data to school closures
+metro.leaid <- df %>% 
+  filter(leaname %in% metro.districts2) %>% 
+  select(leaid) %>% 
+  unique() %>% 
+  pull(leaid)
+# Importing administrative segregation data
+admin <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/Stanford National Segregation Admin District 1991-2022.xlsx") %>% 
+  filter(leaid %in% metro.leaid) %>% 
+  select(
+    leaid, year,
+    # Normalized Exposure Index
+    ns_wht_blk, ns_wht_hsp, ns_wht_asn, ns_wht_nam, ns_wht_min, ns_was_min, ns_wht_nwh, 
+    # NEI Free/Reduced lunch
+    ns_frl_nfr,
+    # Dissimilarity Index
+    ds_wht_blk, ds_wht_hsp, ds_wht_asn, ds_wht_nam, ds_wht_min, ds_was_min, ds_wht_nwh,
+    # Diss. Free/Reduced lunch
+    ds_frl_nfr) 
+# Importing ecological mca score data
+ecol <- read.csv("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/Merged Ecological Dataset.csv")
+# Correct for missing school levels
+school.levels <- df %>% 
+  group_by(schoolname, leaname, level) %>% 
+  summarise(tot= n()) %>% 
+  arrange(schoolname, desc(tot)) %>% 
+  slice_head() %>% 
+  select(-tot)
+
+# Correct for changing district names by choosing the most recent district name
+# We are doing two things: the first is choosing the most recent names for every district id
+# the second is using the district name that appears the most times for each id that uses multiple names
+# across NCES in a year. For ex. Blue Earth uses two different names in 1996 with the same id. This code chooses whichever
+# has the most instances or the one that comes first alphabetically in the case that they have the same count. This should correct around 7% of district names.
+distr.names <- df %>% 
+  select(leaname, leaid, year) %>% 
+  group_by(leaid) %>% 
+  mutate(yr = max(year)) %>% 
+  filter(year==yr) %>% 
+  group_by(leaid, leaname) %>% 
+  summarise(n = n()) %>% 
+  group_by(leaid) %>% 
+  arrange(leaid, desc(n)) %>% 
+  slice_head() %>% 
+  select(-n) %>% 
+  rename(yr_leaname = "leaname")
+
+# Creating clean school data with normalized school levels and district names
+schools <- df %>% 
+  # This chunk of code just completes the levels because NCES only collected levels after the 2000's
+  left_join(school.levels, by = c("schoolname", "leaname"), suffix = c("", ".df1")) %>%
+  select(-level) %>% 
+  rename(level = "level.df1") %>% 
+  left_join(distr.names, by = "leaid") %>% 
+  select(-leaname) %>% 
+  rename(leaname = "yr_leaname")
+rm(df)
+
+# Analysis Prep -----------------------------------------------------------
+
+# Creating a dataset that we can join to the school closures and opens datasets
+sch.members <- schools %>% 
+  select(
+    leaname, schoolname, year, member,
+    tot_black, tot_nam, tot_asian, tot_hisp, tot_tr, tot_white, tot_frlunch) %>% 
+  mutate(
+    member = floor(member),
+    tot_black = floor(tot_black),
+    tot_nam = floor(tot_nam),
+    tot_asian = floor(tot_asian),
+    tot_hisp = floor(tot_hisp),
+    tot_tr = floor(tot_tr),
+    tot_white = floor(tot_white),
+    tot_frlunch = floor(tot_frlunch)
+    )
+# Creating a dataset that we can join to the district closures and opens dataset
+distr.dems <- schools %>% 
+  select(year, schoolname, nces7_final, leaname, member,
+         tot_nam, tot_asian, tot_hisp, tot_black, tot_tr, tot_white) %>% 
+  rename(tot_member = "member") %>% 
+  pivot_longer(c(-year, -schoolname, -nces7_final, -leaname), names_to = "name", values_to = "value") %>% 
+  mutate(value = floor(value)) %>% 
+  group_by(year, leaname, name) %>% 
+  mutate(total_district = sum(value)) %>% 
+  select(-schoolname, -value, -nces7_final) %>% 
+  distinct() %>% 
+  arrange(leaname, desc(year)) %>% 
+  mutate(
+    name = case_when(name=="tot_nam" ~ "distr_nam",
+                     name=="tot_black" ~ "distr_black",
+                     name=="tot_hisp" ~ "distr_hisp",
+                     name=="tot_asian" ~ "distr_asian",
+                     name=="tot_tr" ~ "distr_tr",
+                     name=="tot_white" ~ "distr_white",
+                     name=="tot_member" ~ "distr_member",
+                     TRUE ~ name)
+  ) %>% 
+  pivot_wider(names_from = "name", values_from = "total_district") %>% 
+  mutate(
+    distr_bipoc = distr_nam + distr_black + distr_hisp + distr_asian + distr_tr
+  )
+# Creating a dataset that we can join to the district mca reading closures and opens datasets
+mca <- ecol %>% 
+  filter(leaid %in% metro.leaid) %>% 
+  select(
+    year, schoolname, leaname, leaid,
+    M3_testd, M3_L3M, M3_L4E, M3_L5E,
+    R3_testd, R3_L3M, R3_L4E, R3_L5E) %>% 
+  pivot_longer(c(-schoolname, -year, -leaname, -leaid), names_to = "test", values_to = "count") %>% 
+  group_by(leaid, year, test) %>% 
+  summarise(
+    tot = sum(count, na.rm = T)
+  ) %>% 
+  pivot_wider(names_from = "test", values_from = "tot") %>% 
+  mutate(
+    m3_tot_me = M3_L3M + M3_L4E + M3_L5E,
+    r3_tot_me = R3_L3M + R3_L4E + R3_L5E,
+    m3_perc_me = m3_tot_me / M3_testd,
+    r3_perc_me = r3_tot_me / R3_testd,
+    leaid = as.character(leaid)
+  ) %>% 
+  select(
+    year, leaid, m3_perc_me, r3_perc_me
+  )
+
+# Districts that make up 50% of enrollment in 202
+top.metro.districts <- schools %>% 
+  filter(year==2022, leaname %in% metro.districts2) %>%
+  group_by(leaname) %>% 
+  summarise(tot = sum(member)) %>% 
+  arrange(desc(tot)) %>% 
+  mutate(perc = tot/sum(tot),
+         runsum = cumsum(perc)) %>% 
+  filter(runsum<0.51) %>% 
+  pull(leaname)
+
+top.metro.districts.perc <- as.character(schools %>% 
+  filter(year==2022, leaname %in% metro.districts2) %>% 
+  mutate(topm = case_when(leaname %in% top.metro.districts ~ "Top",
+                          TRUE ~ "Not Top")) %>% 
+  group_by(topm) %>% 
+  summarise(tot = sum(member)) %>%
+  mutate(perc = round(tot/sum(tot), 2)*100) %>% 
+  filter(topm=="Top") %>% 
+  pull(perc))
+
+# Color palettes
+metro.palette <- Polychrome::glasbey.colors(n = length(top.metro.districts) + 2)
+
+# School Levels
+elementary <- schools %>% 
+  filter(level=="Elementary/Primary") %>% 
+  pull(schoolname)
+middle <- schools %>% 
+  filter(level=="Middle") %>% 
+  pull(schoolname)
+high <- schools %>% 
+  filter(level=="High/Secondary") %>% 
+  pull(schoolname)
+
+# Identify the top schools per level in Twin Cities
+top.schools <- schools %>% 
+  filter(year==2022, leaname %in% top.metro.districts) %>% 
+  group_by(schoolname, leaname, level) %>% 
+  summarise(tot = sum(member)) %>% 
+  arrange(level, desc(tot)) %>% 
+  ungroup() %>% 
+  group_by(level) %>% 
+  mutate(perc = tot/sum(tot),
+         runsum = cumsum(perc)) %>% 
+  filter(tot>100) %>% 
+  pull(schoolname)
+
+# Order for levels
+lords <- c("Elementary/Primary", "Middle", "High/Secondary")
+
+```
+
+
+# Number of Schools in the Twin Cities Metro
+
+:::{.callout-note}
+## School Level Imputations
+There is missing school level data (i.e. high school, middle school, elementary school) for records before 2000. We imputed pre-2000 school levels based on the level that was assigned most often to that school after 2000. It's uncommon, but some schools change levels over time. We standardized all school levels to be consistent across time. This may create some inaccuracies in any school level analysis or stratification.
+:::
+
+
+```{r schools_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+schools %>% 
+  filter(leaname %in% top.metro.districts, level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  group_by(year, level) %>% 
+  summarise(
+    tot = n()
+  ) %>% 
+  ggplot() +
+  aes(x = year, y = tot, color = level) +
+  geom_line(size = 1.1) +
+  scale_color_manual(values = c("#4D5F8EFF", "#FAC127FF", "#FA8975FF")) +
+  # scale_y_continuous(
+  #   limits = c(0, 75),
+  #   breaks = seq(0, 75, by = 25)
+  # ) +
+  # facet_wrap(~leaname) +
+  labs(
+    # Main title label
+    title = "Number of Schools in the Twin Cities Metro, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("<b style='color:#4D5F8EFF'>Elementary/Primary Schools</b>, <b style='color:#FA8975FF'>Middle Schools</b>, and <b style='color:#FAC127FF'>High/Secondary Schools</b>"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Number of Schools",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+
+```
+
+# Number of Administrative School Closures and Openings Over Time
+
+::: {.callout-note}
+## Limitations
+A school closure was defined as any school that had students for at least one year after 2001 followed by no students in a subsequent year. A school opening is defined as a school that had no students in 2001 but enrolled students before 2022 for at least one year. Some schools reopen after being closed, and only their initial closure is reflected in this analysis. The definition of closures used for this analysis most likely identifies what would be called <b>administrative closures</b>, whereby a school might close temporarily while it undergoes construction or district reshuffling. Finally, schools with more than 100 students at time of opening or closure were selected for this analysis. (See Supplemental Materials for an a map of all Twin Cities Metro school status by year.)
+:::
+
+```{r schools_closed_prep}
+#| echo: false
+#| include: false
+
+# School closures dataset
+# These are likely administrative closures and not permanent closures
+schools.closed.df <- schools %>% 
+  # This chunk of code filters for schools in the metro district and are elementary schools
+  filter(leaname %in% metro.districts2, level %in% c("Elementary/Primary", "Middle", "High/Secondary"), year >=2001) %>% 
+  select(schoolname, leaid, leaname, year, level, member) %>% 
+  # This chunk of code just replaces the raw number of students with a binary varibale if they have students or not
+  mutate(member = case_when(!is.na(member) ~ c(1),
+                            TRUE ~ c(0))) %>%
+  # This chunk of code just pivots wider in case we wanted to visualize each individual school
+  group_by(leaname, schoolname) %>% 
+  mutate(
+    yr_close = max(year)
+  ) %>% 
+  ungroup() %>% 
+  # This chunk of code is important since we have to filter for those schools that are open as of 2021, however creating indexing years below will mean we need a max year of 2022 which is why we filter for 2020 or lower
+  filter(yr_close<2021) %>% 
+  select(-year, -member) %>% 
+  distinct() %>% 
+  # This chunk of code simply fixes the school closure year to reflect the first year it would be closed and creates index years to then add to the yr closed
+  mutate(
+    yr_close = yr_close + 1,
+    index_yr = 0,
+    index_yr_1 = 1,
+    index_yr_n1 = -1,
+    index_yr_n2 = -2
+  ) %>% 
+  # This chunk of code filters out schools that would be open starting in 2022 since we won't have a +1 year of segregation data
+  pivot_longer(c(-schoolname, -level, -leaname, -yr_close, -leaid), names_to = "index", values_to = "est") %>% 
+  mutate(
+    year = yr_close + est
+  ) %>% 
+  select(-yr_close, -index) %>% 
+  rename(index_year = "est") %>% 
+  left_join(admin, by = c("leaid", "year")) %>% 
+  left_join(sch.members, by = c("schoolname", "leaname", "year")) %>% 
+  left_join(distr.dems, by = c("leaname", "year")) %>% 
+  left_join(mca, by = c("leaid", "year")) %>% 
+  mutate(type = "closure")
+
+# School Openings
+# School open dataset
+schools.opened.df <- schools %>% 
+  # This chunk of code filtes for schools in the metro district and in the "traditional" school levels
+  filter(leaname %in% metro.districts2, level %in% c("Elementary/Primary", "Middle", "High/Secondary"), year>=2001) %>% 
+  select(schoolname, leaid, leaname, year, level, member) %>% 
+  # This chunk of code just replaces the raw number of students with a binary varibale if they have students or not
+  mutate(member = case_when(!is.na(member) ~ c(1),
+                            TRUE ~ c(0))) %>%
+  # This chunk of code selects the minimum years that each school had members (essentially selecting the year they opened)
+  group_by(schoolname, leaname, level) %>% 
+  arrange(year) %>% 
+  mutate(
+    yr_open = min(year)
+  ) %>% 
+  ungroup() %>% 
+  # This chunk of code removes those who were open as of 2001 or opened in 2022 since we won't have segregation data -1:-2 for those in 2001 and +1 for those open in 2022
+  filter(yr_open %in% c(2002:2021)) %>% 
+  select(-member, -year) %>% 
+  distinct() %>% 
+  # This chunk of code adds in the indexing years and pivots wider so we can do the calculations
+  mutate(
+    index_yr = 0,
+    index_yr_1 = 1,
+    index_yr_n1 = -1,
+    index_yr_n2 = -2
+  ) %>% 
+  pivot_longer(c(-schoolname, -level, -leaname, -yr_open, -leaid), names_to = "index", values_to = "est") %>% 
+  mutate(
+    year = yr_open + est
+  ) %>% 
+  select(-yr_open, -index) %>% 
+  rename(index_year = "est") %>% 
+  # This chunk of code adds in the rest of the values
+  left_join(admin, by = c("leaid", "year")) %>% 
+  left_join(sch.members, by = c("schoolname", "leaname", "year")) %>% 
+  left_join(distr.dems, by = c("leaname", "year")) %>% 
+  left_join(mca, by = c("leaid", "year")) %>% 
+  mutate(type = "opening")
+
+# Creating list of schools who have at least 100 students
+sch.cl.100 <- schools.closed.df %>% 
+  filter(index_year==-1, member>=100, schoolname!="Adams Elementary") %>% 
+  pull(schoolname)
+sch.op.100 <- schools.opened.df %>% 
+  filter(index_year==0, member>=100) %>% 
+  pull(schoolname)
+# Ok you need to update this code to remove the duplicate Early childhood edication which you manually removed
+sch.close.final <- schools.closed.df %>% 
+  filter(schoolname %in% sch.cl.100)
+sch.open.final <- schools.opened.df %>% 
+  filter(schoolname %in% sch.op.100)
+
+sch.delta.final <- rbind(sch.close.final, sch.open.final)
+
+```
+
+
+```{r schools_closed_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+sch.delta.final %>% 
+  filter(index_year==-1) %>% 
+  mutate(type = str_to_title(type)) %>% 
+  group_by(type, level, year) %>% 
+  summarise(tot = n()) %>% 
+  ggplot() +
+  aes(x = year, y = tot, fill = level, group = type) +
+  geom_col(position = "stack") +
+  facet_wrap(~type) +
+  scale_fill_manual(values = c("#ef476f", "#06d6a0", "#118ab2")) +
+  # scale_x_continuous(breaks = seq(2001, 2022, by = 5)) +
+  labs(
+    # Main title label
+    title = "Number of School Closures and Openings in the Twin Cities Metro, 2001-2022",
+    # Subtitle label
+    subtitle = paste0("<b style='color:#ef476f'>Elementary/Primary Schools</b>, <b style='color:#118ab2'>Middle Schools</b>, and <b style='color:#06d6a0'>High/Secondary Schools</b>"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Number of Schools",
+    # Caption label
+    caption = "Sources: Stanford NCES Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "none",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+
+```
+
+## What school districts expereinced the most administrative closures?
+
+```{r school_close_distr_prep}
+#| echo: false
+#| include: false
+
+top.sch.closed.distr <- schools.closed.df %>% 
+  group_by(leaname) %>% 
+  summarise(tot = n()) %>% 
+  arrange(desc(tot)) %>% 
+  top_n(n = 9) %>% 
+  pull(leaname)
+
+```
+
+
+
+```{r sch.clos.tab}
+#| echo: false
+
+# schools.closed.df %>%
+#   filter(index_year==-1) %>% 
+#   group_by(leaname, level) %>%
+#   summarise(tot = n()) %>%
+#   arrange(desc(tot)) %>%
+#   mutate(
+#     perc = tot/sum(tot),
+#     level = factor(level, levels = c("Elementary/Primary", "Middle", "High/Secondary"))) %>%
+#   select(level, leaname, tot, perc) %>%
+#   top_n(tot, n = 10) %>%
+#   group_by(level) %>%
+#   arrange(level) %>%
+#   gt() %>%
+#   fmt_percent(
+#     columns = starts_with("perc"),
+#     decimals = 1
+#     ) %>%
+#   tab_header(
+#     title = "Twin Cities Metro School Closures, 1991-2021",
+#     subtitle = ""
+#   ) %>%
+#   opt_align_table_header(align = "center") %>%
+#   cols_align(
+#     align = c("center"),
+#     columns = everything()
+#   ) %>%
+#   tab_source_note(
+#     source_note = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment."
+#   ) %>%
+#   cols_label(
+#     leaname = "School District",
+#     tot = "Total School Closures",
+#     perc = "Percent of District School Closures",
+#   ) %>%
+#   tab_style(locations = cells_title("title"),
+#             style = cell_text(weight = 700)) %>%
+#   tab_style(locations = cells_title("subtitle"),
+#             style = cell_text(weight = 500)) %>%
+#   tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
+#             locations = gt::cells_column_labels(columns = gt::everything())) %>%
+#   tab_style(style = cell_borders(sides = "bottom",
+#                                  color = "black",
+#                                  weight = px(1)),
+#             locations = cells_row_groups()) %>%
+#   tab_options(column_labels.background.color = "white",
+#               data_row.padding = px(3),
+#               heading.border.bottom.style = "none",
+#               table.border.top.width = px(3),
+#               table.border.top.style = "none",
+#               table.border.bottom.style = "none",
+#               column_labels.font.weight = "normal",
+#               column_labels.border.top.style = "none",
+#               column_labels.border.bottom.width = px(2),
+#               column_labels.border.bottom.color = "black",
+#               row_group.border.top.style = "none",
+#               row_group.border.top.color = "black",
+#               row_group.border.bottom.width = px(1),
+#               row_group.border.bottom.color = "white",
+#               stub.border.color = "white",
+#               stub.border.width = px(0),
+#               source_notes.font.size = 12,
+#               source_notes.border.lr.style = "none",
+#               table.font.size = 16)
+
+```
+
+
+```{r school_close_distr_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+#| label: fig-school.closed.bar
+#| fig-cap: School Closures by District in the Twin Cities Metro, 2001-2022
+
+schools.closed.df %>% 
+  filter(index_year==-1) %>% 
+  mutate(leaname = case_when(leaname %in% top.sch.closed.distr ~ leaname,
+                             TRUE ~ "Other")) %>% 
+  group_by(leaname, year) %>% 
+  summarise(tot = n()) %>% 
+  ggplot() +
+  aes(x = year, y = tot, fill = leaname) +
+  geom_col(position = position_stack()) +
+  scale_fill_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#51806AFF", "#fdf0d5",  "#ff99c8", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  labs(
+    # Main title label
+    title = "School Closures by District in the Twin Cities Metro, 2001-2022",
+    # Subtitle label
+    subtitle = paste0(""),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Number of Schools",
+    # Caption label
+    caption = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(fill = guide_legend(nrow = 4, byrow = TRUE))
+
+```
+
+## Among schools that experienced administrative closures, what racial groups are most impacted over time?
+
+::: {.callout-note}
+## Limitations
+Any estimates of counts of people affected by school closures will impacted by the limitations of estimating school closures themselves. The figures below estimate the impact of school closures on students across the metro.
+:::
+
+```{r school_impact_prep}
+#| echo: false
+#| include: false
+
+# How many schools were closed by level
+elementary.closed <- schools.closed.df %>% 
+  filter(index_year==-1) %>% 
+  filter(year %in% c(2001:2021)) %>% 
+  group_by(level) %>% 
+  summarise(tot = n()) %>% 
+  filter(level=="Elementary/Primary") %>% 
+  pull(tot)
+middle.closed <- schools.closed.df %>% 
+  filter(index_year==-1) %>% 
+  filter(year %in% c(2001:2021)) %>% 
+  group_by(level) %>% 
+  summarise(tot = n()) %>% 
+  filter(level=="Middle") %>% 
+  pull(tot)
+high.closed <- schools.closed.df %>% 
+  filter(index_year==-1) %>% 
+  filter(year %in% c(2001:2021)) %>% 
+  group_by(level) %>% 
+  summarise(tot = n()) %>% 
+  filter(level=="High/Secondary") %>% 
+  pull(tot)
+  
+```
+
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# Stacked bar charts
+schools.closed.df %>% 
+  filter(index_year==-1) %>% 
+  rename(tot_member = "member") %>% 
+  group_by(level, year) %>% 
+  summarise(
+    tot_member = sum(tot_member),
+    tot_nam = sum(tot_nam),
+    tot_asian = sum(tot_asian),
+    tot_hisp = sum(tot_hisp),
+    tot_black = sum(tot_black),
+    tot_tr = sum(tot_tr),
+    tot_white = sum(tot_white)) %>% 
+  select(level, year, contains("tot"), -tot_member) %>% 
+  pivot_longer(c(-level, -year), names_to = "type", values_to = "tot") %>% 
+  arrange(level, year) %>% 
+  mutate(
+    type = case_when(type=="tot_asian" ~ "Asian",
+                     type=="tot_hisp" ~ "Hispanic/Latin@",
+                     type=="tot_black" ~ "Black/African American",
+                     type=="tot_member" ~ "All Students",
+                     type=="tot_white" ~ "White",
+                     type=="tot_nam" ~ "Native American",
+                     type=="tot_tr" ~ "Multiracial"),
+    level = factor(level, levels = lords)
+  ) %>% 
+  ungroup() %>% 
+  ggplot() +
+  aes(x = year, y = tot, fill = type) +
+  geom_col(position = position_fill()) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_fill_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#bdadea", "#e56b6f")) +
+  facet_wrap(~level) +
+  labs(
+    # Main title label
+    title = "Students Affected by School Closures in the Twin Cities Metro, 2001-2021",
+    # Subtitle label
+    subtitle = paste0("Between 2001-2021, <b>", elementary.closed, " Elementary Schools, ", middle.closed, " Middle Schools, and ", high.closed, " High Schools</b> were closed"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Percent of Students",
+    # Caption label
+    caption = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+
+```
+
+## Within districts, are schools that closed more likely to have students of color and on free or reduced lunch programs?
+
+::: {.callout-note}
+## Analysis Description
+This estimate compares the annual district median proportion of Black, Hispanic, and BIPOC students, as well as those on free or reduced lunch, to each individual school and plots the difference. It's stratified by whether or not a school experienced a closure and faceted by the racial or economic metric of interest. Schools that are above the 0.0 reference line indicate that their respective demographics are above the annual district mean, whereas those below the reference line indicate their respective demographics are below the annual district mean.
+:::
+
+```{r med_diff_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+scl <- schools.closed.df %>% 
+  filter(index_year==-1) %>% 
+  select(schoolname, leaname, year, level, type)
+
+meds <- schools %>% 
+  select(schoolname, leaname, level, year, 
+         tot_member = "member", tot_asian, tot_nam, tot_hisp, tot_black, tot_tr, tot_white, tot_frlunch,
+         perblack, perasian, pernam, perhisp, pertr, perwhite, perfrlunch) %>% 
+  mutate(across(starts_with("tot_"), floor)) %>% 
+  filter(leaname %in% metro.districts2, level %in% lords) %>% 
+  mutate(
+    tot_bipoc = tot_asian + tot_hisp + tot_nam + tot_tr + tot_black,
+    perbipoc = tot_bipoc/tot_member
+  ) %>% 
+  group_by(leaname, year, level) %>% 
+  summarise(
+    med_black = median(perblack, na.rm = T),
+    med_hisp = median(perhisp, na.rm = T),
+    med_bipoc = median(perbipoc, na.rm = T),
+    med_frlunch = median(perfrlunch, na.rm = T))
+
+med.schools <- schools %>% 
+  filter(year>=2001) %>% 
+  select(schoolname, leaname, level, year, 
+         tot_member = "member", tot_asian, tot_nam, tot_hisp, tot_black, tot_tr, tot_white, tot_frlunch,
+         perblack, perhisp, perfrlunch) %>% 
+  mutate(across(starts_with("tot_"), floor)) %>% 
+  filter(leaname %in% metro.districts2, level %in% lords) %>% 
+  mutate(
+    tot_bipoc = tot_asian + tot_hisp + tot_nam + tot_tr + tot_black,
+    perbipoc = tot_bipoc/tot_member
+  ) %>% 
+  select(schoolname, leaname, level, year, perbipoc, perhisp, perblack, perfrlunch) %>% 
+  left_join(scl, by = c("schoolname", "leaname", "level", "year")) %>% 
+  left_join(meds, by = c("leaname", "level", "year")) %>% 
+  mutate(
+    diff_black = perblack - med_black,
+    diff_hisp = perhisp - med_hisp,
+    diff_bipoc = perbipoc - med_bipoc,
+    diff_frlunch = perfrlunch - med_frlunch
+  ) %>% 
+  select(schoolname, leaname, level, year, type, diff_black, diff_hisp, diff_bipoc, diff_frlunch) %>% 
+  pivot_longer(c(-schoolname, -leaname, -level, -year, -type), names_to = "race", values_to = "diff")
+
+ggplot() +
+  geom_point(
+    data = med.schools %>% filter(is.na(type)), 
+    aes(x = year, y = diff),
+    color = "#e9c46a"
+    ) +
+  geom_point(
+    data = med.schools %>% filter(type=="closure"), 
+    aes(x = year, y = diff),
+    color = "#264653"
+    ) +
+  geom_hline(yintercept = 0, linewidth = 1, color = "#2a9d8f") +
+  facet_wrap(~race) +
+  labs(
+    # Main title label
+    title = "Demographics of School Closures in the Twin Cities Metro, 2001-2021",
+    # Subtitle label
+    subtitle = paste0("Difference in Annual District Mean between schools that<br><b style='color:#264653'> closed</b> and those that <b style='color:#e9c46a'> did not close</b>"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Percent of Students",
+    # Caption label
+    caption = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+
+```
+

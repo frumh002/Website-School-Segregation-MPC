@@ -1,9 +1,9 @@
 ---
-title: "School Segregation Index Builds"
+title: "School Segregation Index Descriptive Report"
 author: 
   - Mateo Frumholtz
   - Sara Garcia
-date: 07-24-2024
+date: "`r Sys.Date()`"
 format:
   html:
     embed-resources: true
@@ -16,6 +16,8 @@ execute:
 ```{r prep}
 #| echo: false
 #| include: false
+
+rm(list = ls())
 
 # Install Needed Packages -------------------------------------------------
 
@@ -30,6 +32,7 @@ library(Polychrome)
 library(segregation)
 library(ggpmisc)
 library(ggstream)
+library(tidycensus)
 
 # Import Datasets ---------------------------------------------------------
 admin <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/Stanford National Segregation Admin District 1991-2022.xlsx")
@@ -45,7 +48,7 @@ cbsa <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segrega
 # xs_wht_min
 # xs_was_min
 # xs_wht_nwh
-## Isolation
+## Isolation??????
 # ss_wht_blk
 # ss_wht_hsp
 # ss_wht_asn
@@ -53,6 +56,10 @@ cbsa <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segrega
 # ss_wht_min
 # ss_was_min
 # ss_wht_nwh
+# ss_blk_wht - Black Isolation?
+# ss_hsp_wht - Hispanic Isolation?
+# ss_asn_wht - Asian Isolation?
+# ss_nam_wht - Native American Isolation?
 ## Normalized Exposure Index
 # ns_wht_blk
 # ns_wht_hsp
@@ -84,214 +91,121 @@ cbsa <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segrega
 
 # Variables Prep ----------------------------------------------------------
 # Metro districts were compiled from the list of metro school districts in the 2021 MDE Public Enrollment File (called FY2021 MDE Enrollment)
-metro.districts <- c("Academia Cesar Chavez Charter School",
-                     "Academic Arts High School",
-                     "Achieve Language Academy",
-                     "Afsa High School",
-                     "Agamim Classical Academy",
-                     "Anoka-Hennepin",
-                     "Anoka-Hennepin School District", 
-                     "Anoka-Hennepin Public School District",
-                     "Aspen Academy",
-                     "Athlos Leadership Academy",
-                     "Augsburg Fairview Academy",
-                     "Aurora Charter School",
-                     "Avalon School",
-                     "Bdote Learning Center",
-                     "Beacon Academy",
-                     "Belle Plaine",
-                     "Belle Plaine Public School District",
-                     "Best Academy",
-                     "Bloomington",
-                     "Bloomington Public School District",
-                     "Bluesky Charter School",
-                     "Brooklyn Center School District",
-                     "Buffalo-Hanover-Montrose Public Schools",
-                     "Buffalo-Hanover-Montrose Schools",
-                     "Burnsville",
-                     "Burnsville Public School District",
-                     "Burnsville-Eagan-Savage Schools",
-                     "Career Pathways",
-                     "Cedar Riverside Community School",
-                     "Centennial Public School District",
-                     "Central Public School District",
-                     "Chisago Lakes School District", # MDE does not have this on the metro list
-                     "City Academy",
-                     "College Preparatory Elementary",
-                     "Cologne Academy",
-                     "Columbia Heights Public School District",
-                     "Community Of Peace Academy",
-                     "Community School Of Excellence",
-                     "Cornerstone Montessori Elementary",
-                     "Cyber Village Academy",
-                     "Davinci Academy",
-                     "Delano Public School District", # MDE does not have this on the metro list
-                     "Discovery Charter School",
-                     "Eagle Ridge Academy Charter School",
-                     "Eastern Carver County Public School",
-                     "Eden Prairie",
-                     "Eden Prairie Public School District",
-                     "Edina",
-                     "Edina Public School District",
-                     "El Colegio Charter School",
-                     "Elk River", # MDE does not have this on the metro list
-                     "Excell Academy Charter",
-                     "Face To Face Academy",
-                     "Farmington",
-                     "Farmington Public School District",
-                     "FIT Academy",
-                     "Forest Lake",
-                     "Forest Lake Public School District",
-                     "Fridley Public School District",
-                     "Friendship Academy of the Arts",
-                     "Gateway STEM Academy",
-                     "Global Academy",
-                     "Great Oaks Academy Charter School",
-                     "Great River School",
-                     "Hastings Public School District",
-                     "Hennepin Schools",
-                     "Hiawatha Academies",
-                     "High School For Recording Arts",
-                     "Higher Ground Academy",
-                     "Hmong College Prep Academy",
-                     "Hope Community Academy",
-                     "Hopkins Public School District",
-                     "Horizon Science Academy Twin Cities",
-                     "Inver Grove Heights Schools",
-                     "Innovation Sci & Tech Academy",
-                     "Intermediate School District 287",
-                     "Intermediate School District 917",
-                     "International Spanish Language Acad",
-                     "Inver Grove Heights Schools",
-                     "Jennings Community School",
-                     "Jordan Public School District",
-                     "Kipp Minnesota Charter School",
-                     "Lakes International Language Academ",
-                     "Lakeville",
-                     "Lakeville Area Schools", 
-                     "Lakeville Public School District",
-                     "Lakeville School District",
-                     "Laura Jeffrey Academy Charter",
-                     "Legacy of Dr Josie R Johnson Montes",
-                     "Level Up Academy",
-                     "Le Sueur-Henderson School District", # MDE does not have this one on their metro list
-                     "Life Prep",
-                     "Lincoln International High School",
-                     "Lionsgate Academy",
-                     "Loveworks Academy For Arts",
-                     "Mahtomedi Public School District",
-                     "Marine Area Community School",
-                     "Mastery School",
-                     "Math And Science Academy",
-                     "Metro Deaf School",
-                     "Metro Schools Charter",
-                     "Metro Tech Academy",
-                     "Midway Star Academy",
-                     "Minneapolis Public School District",
-                     "Minnesota Department Of Corrections",
-                     "Minnesota Excellence in Learning Ac",
-                     "Minnesota Internship Center",
-                     "Minnesota Math and Science Academy",
-                     "Minnesota Online High School",
-                     "Minnesota Transitions Charter Schools",
-                     "Minnesota Wildflower Montessori Schools",
-                     "Minnetonka",
-                     "Minnetonka Public School District",
-                     "Modern Montessori Charter School",
-                     "Mounds View",
-                     "Mounds View Public School District",
-                     "Nasha Shkola Charter School",
-                     "New Century School",
-                     "New City School",
-                     "New Heights School Inc.",
-                     "New Millennium Academy",
-                     "New Prague Area Schools",
-                     "Noble Academy",
-                     "North Lakes Academy",
-                     "North Metro Flex Academy",
-                     "North St Paul-Maplewood Oakdale District",
-                     "North St Paul-Maplewood School District",
-                     "Northeast College Prep",
-                     "Northeast Metro 916",
-                     "Northfield Public School District", # MDE does not have this in their metro list
-                     "Northwest Passage High School",
-                     "Notre Ecole Academy",
-                     "Nova Classical Academy",
-                     "Orono Public School District",
-                     "Osseo Public School District",
-                     "Pact Charter School",
-                     "Paladin Career and Tech High School",
-                     "Parnassus Preparatory Charter Schools",
-                     "Partnership Academy Inc.",
-                     "Perpich Center For Arts Education",
-                     "PIM Arts High School",
-                     "Prairie Creek Community School",
-                     "Prairie Seeds Academy",
-                     "Prior Lake-Savage Area Schools",
-                     "Prodeo Academy",
-                     "Progeny Academy Charter School",
-                     "Quantum STEAM Academy Charter",
-                     "Randolph Public School District",
-                     "Richfield Public School District",
-                     "Robbinsdale Public School District",
-                     "Rockford Public School District", # MDE does not have this in their metro list
-                     "Rosemount-Apple Valley-Eagan",
-                     "Roseville Public School District",
-                     "Sage Academy Charter School",
-                     "Saint Paul Public Schools",
-                     "SciTech Academy Charter School",
-                     "Sejong Academy of Minnesota",
-                     "Seven Hills Preparatory Academy",
-                     "Shakopee Public School District",
-                     "Skyline Math and Science Academy",
-                     "Sojourner Truth Academy",
-                     "South St. Paul Public School District",
-                     "South Washington County Schools",
-                     "Southside Family Charter School",
-                     "Southwest Metro Intermediate 288",
-                     "Spero Academy",
-                     "Spring Lake Park Public Schools",
-                     "St Paul Conservatory Performing Art",
-                     "St. Anthony-New Brighton Schools",
-                     "St. Croix Preparatory Academy",
-                     "St. Francis Area Schools",
-                     "St. Louis Park",
-                     "St. Louis Park Public School District",
-                     "St. Michael-Albertville Schools", # MDE does not have this in their metro list
-                     "St. Paul",
-                     "St. Paul City School",
-                     "St. Paul Public School District",
-                     "St. Paul School of Northern Lights",
-                     "Star of the North Academy Charter S",
-                     "STEAM Academy Charter School",
-                     "Stillwater Area Public School District",
-                     "Stillwater Area Public Schools",
-                     "Stonebridge World School",
-                     "Success Academy",
-                     # MDE has a school called TESFA INTERNATIONAL SCHOOL that is not in the NCES dataset
-                     "The Journey School",
-                     "Twin Cities Academy",
-                     "Twin Cities German Immersion Chtr",
-                     "Twin Cities International Schools",
-                     "Ubah Medical Academy Charter School",
-                     "Universal Academy Charter School",
-                     "Upper Mississippi Academy",
-                     "Urban Academy",
-                     "Venture Academy",
-                     "Waconia",
-                     "Waconia Public School District",
-                     "Watershed High School",
-                     "Watertown-Mayer Public School District",
-                     "Wayzata Public School District",
-                     "West St. Paul-Mendota Heights-Eagan",
-                     "Westonka Public School District",
-                     "White Bear Lake School District",
-                     "Woodbury Leadership Academy",
-                     "World Learner Charter School",
-                     "Yinghua Academy")
+# Metro districts were compiled from the list of metro school districts in the 2021 MDE Public Enrollment File (called FY2021 MDE Enrollment)
+metro.districts2 <- c("Anoka-Hennepin School District",           
+                      "Anoka-Hennepin Public School District", # Not present after normalized
+                      "Belle Plaine Public School District",      
+                      "Bloomington Public School District",      
+                      "Brooklyn Center School District",          
+                      "Buffalo-Hanover-Montrose Public Schools", # Not present after normalized
+                      "Buffalo-Hanover-Montrose Schools",         
+                      "Burnsville", # Not present after normalized                              
+                      "Burnsville Public School District", # Not present after normalized        
+                      "Burnsville-Eagan-Savage Schools",         
+                      "Centennial Public School District",        
+                      "Central Public School District", # Not present after normalized          
+                      "Chisago Lakes School District",            
+                      "Columbia Heights Public School District", 
+                      "Delano Public School District",            
+                      "Eastern Carver County Public School",     
+                      "Eden Prairie", # Not present after normalized                             
+                      "Eden Prairie Public School District",     
+                      "Edina Public School District",                                    
+                      "Elk River Public School District",                               
+                      "Farmington Public School District",        
+                      "Forest Lake Public School District",      
+                      "Fridley Public School District",           
+                      "Hastings Public School District",         
+                      "Hopkins Public School District",           
+                      "Inver Grove Heights Schools",             
+                      "Jordan Public School District",            
+                      "Lakeville Area Schools",                  
+                      "Lakeville Public School District", # Not present after normalized         
+                      "Le Sueur-Henderson School District",      
+                      "Mahtomedi Public School District",         
+                      "Minneapolis Public School District",      
+                      "Minnetonka Public School District",        
+                      "Mounds View Public School District",      
+                      "New Prague Area Schools",                  
+                      "North St. Paul-Maplewood Oakdale",
+                      "Northfield Public School District",        
+                      "Orono Public School District",            
+                      "Osseo Public School District",             
+                      "Prior Lake-Savage Area Schools",          
+                      "Randolph Public School District",          
+                      "Richfield Public School District",        
+                      "Robbinsdale Public School District",       
+                      "Rockford Public School District",         
+                      "Rosemount-Apple Valley-Eagan",             
+                      "Roseville Public School District",  
+                      "Saint Paul Public Schools",
+                      "Shakopee Public School District",          
+                      "South St. Paul Public School District",   
+                      "South Washington County Schools",          
+                      "Spring Lake Park Public Schools",         
+                      "St. Anthony-New Brighton Schools",         
+                      "St. Francis Area Schools",                
+                      "St. Louis Park Public School District",    
+                      "St. Michael-Albertville Schools",         
+                      "St. Paul Public School District", # Not present after normalized          
+                      "Stillwater Area Public Schools",          
+                      "Waconia Public School District",           
+                      "Watertown-Mayer Public School District",  
+                      "Wayzata Public School District",           
+                      "West St. Paul-Mendota Heights-Eagan",     
+                      "Westonka Public School District",          
+                      "White Bear Lake School District")
+
+# Importing school data to standardize the district names and collect district ID's
+df <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/MN_Stanford_NCES_data 91-22.xlsx", sheet = "LISDdata")
+# Creating a list of the metro district ID's by matching the district names so we can filter and match district segregation data to school closures
+metro.leaid <- df %>% 
+  filter(leaname %in% metro.districts2) %>% 
+  select(leaid) %>% 
+  unique() %>% 
+  pull(leaid)
+# Correct for missing school levels
+school.levels <- df %>% 
+  group_by(schoolname, leaname, level) %>% 
+  summarise(tot= n()) %>% 
+  arrange(schoolname, desc(tot)) %>% 
+  slice_head() %>% 
+  select(-tot)
+# Correct for changing district names by choosing the most recent district name
+# We are doing two things: the first is choosing the most recent names for every district id
+# the second is using the district name that appears the most times for each id that uses multiple names
+# across NCES in a year. For ex. Blue Earth uses two different names in 1996 with the same id. This code chooses whichever
+# has the most instances or the one that comes first alphabetically in the case that they have the same count. This should correct around 7% of district names.
+distr.names <- df %>% 
+  select(leaname, leaid, year) %>% 
+  group_by(leaid) %>% 
+  mutate(yr = max(year)) %>% 
+  filter(year==yr) %>% 
+  group_by(leaid, leaname) %>% 
+  summarise(n = n()) %>% 
+  group_by(leaid) %>% 
+  arrange(leaid, desc(n)) %>% 
+  slice_head() %>% 
+  select(-n) %>% 
+  rename(yr_leaname = "leaname")
+
+# Creating clean school data with normalized school levels and district names and pulling district id's for segregation analysis
+distr.ids <- df %>% 
+  # This chunk of code just completes the levels because NCES only collected levels after the 2000's
+  left_join(school.levels, by = c("schoolname", "leaname"), suffix = c("", ".df1")) %>%
+  select(-level) %>% 
+  rename(level = "level.df1") %>% 
+  left_join(distr.names, by = "leaid") %>% 
+  select(-leaname) %>% 
+  rename(leaname = "yr_leaname") %>% 
+  filter(leaname %in% metro.districts2) %>%
+  select(leaid) %>% 
+  distinct() %>% 
+  pull(leaid)
+rm(df)
 
 top.metro.districts <- admin %>% 
-  filter(year==2022, leaname %in% metro.districts) %>%
+  filter(year==2022, statename=="Minnesota", leaid %in% distr.ids) %>%
   group_by(leaname) %>% 
   summarise(tot = sum(tot)) %>% 
   arrange(desc(tot)) %>% 
@@ -301,7 +215,7 @@ top.metro.districts <- admin %>%
   pull(leaname)
 
 top.metro.districts.perc <- admin %>% 
-  filter(year==2022, leaname %in% metro.districts) %>% 
+  filter(year==2022, statename=="Minnesota", leaid %in% distr.ids) %>% 
   mutate(topm = case_when(leaname %in% top.metro.districts ~ "Top",
                           TRUE ~ "Not Top")) %>% 
   group_by(topm) %>% 
@@ -318,15 +232,17 @@ top.cbsas <- cbsa %>%
   top_n(n = 20) %>% 
   pull(cbsa23name)
 
+# paletteer::paletteer_d("pals::alphabet")
+
 ```
 
 # Minnesota School District-Level Indices
 
-## Exposure Index (same as Interaction Index?)
+## How do segregation trends across the Twin Cities 7-county metro compare to each other?
 
-### Interaction Index
+### Exposure/Interaction Index
 
-Interaction Index is a measure of...
+The Exposure/Interaction Index is a measure of segregation. It estimates the probability of members of specific groups interacting with members of another specific group. In the case of school segregation, it measures the probability that students of racial group A will interact with students of racial group B in a specific school within the district. This measure takes into account the proportion of students of each race within a district that attend each school. See the Census Bureau's brief for more information on this [index](https://www.census.gov/content/dam/Census/library/working-papers/2003/demo/massey.pdf).
 
 $$Interaction = \sum_{i=1}^n \left( \frac{B_i}{B} \right) \left( \frac{W_i}{T_i} \right)$$
 
@@ -338,6 +254,11 @@ Where:
 - $T_i$ is the total student enrollment of the school district $i$.
 - $n$ is the number of schools in the district.
 
+::: {.callout-warning}
+## Exposure Index Limitations
+
+:::
+
 ```{r district_exposure_plot}
 #| echo: false
 #| fig-width: 12
@@ -346,28 +267,26 @@ Where:
 # MN School District Exposure Index ---------------------------------------
 
 admin %>% 
-  filter(stateabb=="MN") %>% 
+  filter(statename=="Minnesota") %>% 
   select(
     year, leaname,
-    xs_wht_blk, xs_wht_hsp, xs_wht_asn, xs_wht_nam, xs_wht_min, xs_was_min, xs_wht_nwh # Exposure
+    xs_wht_blk, xs_wht_hsp, xs_wht_asn, xs_wht_nam, xs_wht_nwh # Exposure
     ) %>% 
   rename(
     "White-Black" = "xs_wht_blk",
     "White-Hispanic" = "xs_wht_hsp",
     "White-Asian" = "xs_wht_asn",
     "White-Native American" = "xs_wht_nam",
-    "White-Minority" = "xs_wht_min",
-    "White/Asian-Minority" = "xs_was_min",
     "White-Non White" = "xs_wht_nwh"
   ) %>% 
   filter(leaname %in% top.metro.districts) %>% 
   pivot_longer(c(-year, -leaname), names_to = "type", values_to = "value") %>% 
   ggplot() +
-  aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
-  facet_wrap(~leaname) +
+  aes(x = year, y = value, color = leaname) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#51806AFF", "#fdf0d5",  "#ff99c8", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  facet_wrap(~type) +
   labs(
     # Main title label
     title = "Exposure Index in the Twin Cities Metro, 1991-2022",
@@ -470,11 +389,12 @@ admin %>%
       fill = "#ffffff", 
       color = "#ffffff"
     )
-  )
+  ) +
+  guides(color = guide_legend(nrow = 4, byrow = TRUE))
 
 ```
 
-## Isolation Index
+### Isolation Index
 
 Isolation index is a measure of...
 
@@ -486,6 +406,11 @@ Where:
 - $T_i$ is the total student enrollment of the district $i$.
 - $n$ is the number of schools in the district.
 
+::: {.callout-important}
+## Isolation Index Metrics
+I have not yet understood which are the Isolation Index measures we should use from Stanford's Administrative dataset. There are many to choose from. We also have to identify what geographies we want to measure across.
+:::
+
 ```{r district_isolation_plot}
 #| echo: false
 #| fig-width: 12
@@ -494,28 +419,25 @@ Where:
 # MN School District Isolation Index --------------------------------------
 
 admin %>% 
-  filter(stateabb=="MN") %>% 
+  filter(statename=="Minnesota") %>% 
   select(
     year, leaname,
-    ss_wht_blk, ss_wht_hsp, ss_wht_asn, ss_wht_nam, ss_wht_min, ss_was_min, ss_wht_nwh # Isolation
+    ss_blk_wht, ss_hsp_wht, ss_asn_wht, ss_nam_wht, # Isolation
   ) %>% 
   rename(
-    "White-Black" = "ss_wht_blk",
-    "White-Hispanic" = "ss_wht_hsp",
-    "White-Asian" = "ss_wht_asn",
-    "White-Native American" = "ss_wht_nam",
-    "White-Minority" = "ss_wht_min",
-    "White/Asian-Minority" = "ss_was_min",
-    "White-Non White" = "ss_wht_nwh"
+    "Black Isolation" = "ss_blk_wht",
+    "Hispanic Isolation" = "ss_hsp_wht",
+    "Asian Isolation" = "ss_asn_wht",
+    "Native American Isolation" = "ss_nam_wht"
   ) %>% 
   filter(leaname %in% top.metro.districts) %>% 
   pivot_longer(c(-year, -leaname), names_to = "type", values_to = "value") %>% 
   ggplot() +
-  aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
-  facet_wrap(~leaname) +
+  aes(x = year, y = value, color = leaname) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#51806AFF", "#fdf0d5",  "#ff99c8", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  facet_wrap(~type) +
   labs(
     # Main title label
     title = "Isolation Index in the Twin Cities Metro, 1991-2022",
@@ -618,11 +540,16 @@ admin %>%
       fill = "#ffffff", 
       color = "#ffffff"
     )
-  )
+  ) +
+  guides(color = guide_legend(nrow = 4, byrow = TRUE))
 
 ```
 
-## Normalized Exposure Index
+### Normalized Exposure Index
+
+According to Education Opportunity's [website](https://edopportunity.org/segregation/about/), the normalized exposure index measures:
+"the difference between two groups’ exposure to one of the groups. For example, the White-Hispanic normalized exposure index compares the proportions of White (or Hispanic, equivalently) students in the average White and Hispanic students’ schools. A White-Hispanic normalized exposure value of 0.5 indicates that the proportion of White students in the average White student’s school is 50 percentage points higher than in the average Hispanic student’s school (ignoring the presence of other groups aside from the racial dyad of interest)."
+
 
 ```{r district_normalized_exposure_plot}
 #| echo: false
@@ -632,28 +559,26 @@ admin %>%
 # MN School District Normalized Exposure Index ----------------------------
 
 admin %>% 
-  filter(stateabb=="MN") %>% 
+  filter(statename=="Minnesota") %>% 
   select(
     year, leaname,
-    ns_wht_blk, ns_wht_hsp, ns_wht_asn, ns_wht_nam, ns_wht_min, ns_was_min, ns_wht_nwh # Normalized Exposure Index
+    ns_wht_blk, ns_wht_hsp, ns_wht_asn, ns_wht_nam, ns_wht_nwh # Normalized Exposure Index
   ) %>% 
   rename(
     "White-Black" = "ns_wht_blk",
     "White-Hispanic" = "ns_wht_hsp",
     "White-Asian" = "ns_wht_asn",
     "White-Native American" = "ns_wht_nam",
-    "White-Minority" = "ns_wht_min",
-    "White/Asian-Minority" = "ns_was_min",
     "White-Non White" = "ns_wht_nwh"
   ) %>% 
   filter(leaname %in% top.metro.districts) %>% 
   pivot_longer(c(-year, -leaname), names_to = "type", values_to = "value") %>% 
   ggplot() +
-  aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
-  facet_wrap(~leaname) +
+  aes(x = year, y = value, color = leaname) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#51806AFF", "#fdf0d5",  "#ff99c8", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  facet_wrap(~type) +
   labs(
     # Main title label
     title = "Normalized Exposure Index in the Twin Cities Metro, 1991-2022",
@@ -756,15 +681,17 @@ admin %>%
       fill = "#ffffff", 
       color = "#ffffff"
     )
-  )
+  ) +
+  guides(color = guide_legend(nrow = 4, byrow = TRUE))
 
 ```
 
-## Dissimilarity Index
+### Dissimilarity Index
 
-The Dissimilarity index is a measure of...
+The Dissimilarity index is another measure of segregation. According to the [census bureau](https://www.censusscope.org/about_dissimilarity.html), the dissimilarity measures the proportion of one group that would have to move to another area to be distributed equally as a comparison group. It can be interpreted in the following way:
+"A dissimilarity index of 0 indicates conditions of total integration under which both groups are distributed in the same proportions across all neighborhoods. A dissimilarity index of 100 indicates conditions of total segregation such that the members of one group are located in completely different neighborhoods than the second group."
 
-Dissimilarity index was calculated following Wang et al.'s, methods found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9173588/#SD1). 
+Dissimilarity index is calculated following Wang et al.'s, methods found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9173588/#SD1). 
 
 $$Dissimilarity = \frac{1}{2} \sum_{i=1}^{n} \left|\frac{b_i}{B}  - \frac{w{_i}}{W} \right|$$
 Where:
@@ -783,28 +710,26 @@ Where:
 # MN School District Dissimilarity Index ----------------------------------
 
 admin %>% 
-  filter(stateabb=="MN") %>% 
+  filter(statename=="Minnesota") %>% 
   select(
     year, leaname,
-    ds_wht_blk, ds_wht_hsp, ds_wht_asn, ds_wht_nam, ds_wht_min, ds_was_min, ds_wht_nwh # Dissimilarity
+    ds_wht_blk, ds_wht_hsp, ds_wht_asn, ds_wht_nam, ds_wht_nwh # Dissimilarity
   ) %>% 
   rename(
     "White-Black" = "ds_wht_blk",
     "White-Hispanic" = "ds_wht_hsp",
     "White-Asian" = "ds_wht_asn",
     "White-Native American" = "ds_wht_nam",
-    "White-Minority" = "ds_wht_min",
-    "White/Asian-Minority" = "ds_was_min",
     "White-Non White" = "ds_wht_nwh"
   ) %>% 
   filter(leaname %in% top.metro.districts) %>% 
   pivot_longer(c(-year, -leaname), names_to = "type", values_to = "value") %>% 
   ggplot() +
-  aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
-  facet_wrap(~leaname) +
+  aes(x = year, y = value, color = leaname) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#51806AFF", "#fdf0d5",  "#ff99c8", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  facet_wrap(~type) +
   labs(
     # Main title label
     title = "Dissimilarity Index in the Twin Cities Metro, 1991-2022",
@@ -907,12 +832,13 @@ admin %>%
       fill = "#ffffff", 
       color = "#ffffff"
     )
-  )
+  ) + 
+  guides(color = guide_legend(nrow = 4, byrow = TRUE))
 
 
 ```
 
-## Information Theory Index Plot
+### Information Theory Index Plot
 
 ```{r district_information_plot}
 #| echo: false
@@ -922,28 +848,26 @@ admin %>%
 # MN School District Information Theory Index -----------------------------
 
 admin %>% 
-  filter(stateabb=="MN") %>% 
+  filter(statename=="Minnesota") %>% 
   select(
     year, leaname,
-    hs_wht_blk, hs_wht_hsp, hs_wht_asn, hs_wht_nam, hs_wht_min, hs_was_min, hs_wht_nwh # Information Theory
+    hs_wht_blk, hs_wht_hsp, hs_wht_asn, hs_wht_nam, hs_wht_nwh # Information Theory
   ) %>% 
   rename(
     "White-Black" = "hs_wht_blk",
     "White-Hispanic" = "hs_wht_hsp",
     "White-Asian" = "hs_wht_asn",
     "White-Native American" = "hs_wht_nam",
-    "White-Minority" = "hs_wht_min",
-    "White/Asian-Minority" = "hs_was_min",
     "White-Non White" = "hs_wht_nwh"
   ) %>% 
   filter(leaname %in% top.metro.districts) %>% 
   pivot_longer(c(-year, -leaname), names_to = "type", values_to = "value") %>% 
   ggplot() +
-  aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
-  facet_wrap(~leaname) +
+  aes(x = year, y = value, color = leaname) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#51806AFF", "#fdf0d5",  "#ff99c8", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  facet_wrap(~type) +
   labs(
     # Main title label
     title = "Information Theory Index in the Twin Cities Metro, 1991-2022",
@@ -1046,11 +970,12 @@ admin %>%
       fill = "#ffffff", 
       color = "#ffffff"
     )
-  )
+  ) +
+  guides(color = guide_legend(nrow = 4, byrow = TRUE))
 
 ```
 
-## Difference in Exposure to Free Lunch
+### Difference in Exposure to Free Lunch
 
 ```{r district_lunch_plot}
 #| echo: false
@@ -1060,7 +985,7 @@ admin %>%
 # MN School District Free Lunch Exposure ----------------------------------
 
 admin %>% 
-  filter(stateabb=="MN") %>% 
+  filter(statename=="Minnesota") %>% 
   select(
     year, leaname,
     zs_blk_wht, zs_hsp_wht, zs_min_wht # Difference in Exposure to Free Lunch
@@ -1074,8 +999,8 @@ admin %>%
   pivot_longer(c(-year, -leaname), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~leaname) +
   labs(
@@ -1186,7 +1111,77 @@ admin %>%
 
 # CBSA-Level Segregation Indices
 
-## Exposure Index
+## How do segregation trends in the Twin Cities compare to other cities in the US?
+
+The following analysis compares Twin Cities between-school segregation trends to other US major cities. The first charts highlight city-level trends and the following compares those trends across cities. Only the top 20 CBSA's by student population were used for these plots. Given the length of the CBSA names, they have been shortened to be legible in these crowded plots. Reference the following table for the abbreviated names:
+
+```{r cbsa_ref_tabl}
+#| echo: false
+
+cbsa %>% 
+  filter(year==2022) %>% 
+  group_by(cbsa23name) %>% 
+  summarise(tot = sum(tot)) %>% 
+  arrange(desc(tot)) %>% 
+  top_n(n = 20) %>% 
+  select(long = "cbsa23name") %>% 
+  mutate(
+    short = str_extract_all(long, "^[^-]+|(?<=, )[^-]+") %>% 
+              sapply(paste, collapse = ", ")
+  ) %>% 
+  gt() %>% 
+  tab_header(
+    title = "Twin Cities Metro School Closures, 2001-2022",
+    subtitle = ""
+  ) %>% 
+  opt_align_table_header(align = "center") %>% 
+  cols_align(
+    align = c("center"),
+    columns = everything()
+  ) %>% 
+  tab_source_note(
+    source_note = "Data source is the Stanford Segregation Dataset from Education Opportunity."
+  ) %>% 
+  cols_label(
+    long = "Full CBSA Name",
+    short = "Short CBSA Name",
+  ) %>%
+  tab_style(locations = cells_body(),
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 400)) %>% 
+  tab_style(locations = cells_title("title"), 
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>% 
+  tab_style(locations = cells_title("subtitle"), 
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>% 
+  tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
+            locations = gt::cells_column_labels(columns = gt::everything())) %>%
+  tab_style(style = cell_borders(sides = "bottom", 
+                                 color = "black", 
+                                 weight = px(1)), 
+            locations = cells_row_groups()) %>% 
+  tab_options(column_labels.background.color = "white", 
+              data_row.padding = px(3), 
+              heading.border.bottom.style = "none", 
+              table.border.top.width = px(3), 
+              table.border.top.style = "none", 
+              table.border.bottom.style = "none", 
+              column_labels.font.weight = "normal", 
+              column_labels.border.top.style = "none", 
+              column_labels.border.bottom.width = px(2), 
+              column_labels.border.bottom.color = "black", 
+              row_group.border.top.style = "none", 
+              row_group.border.top.color = "black", 
+              row_group.border.bottom.width = px(1), 
+              row_group.border.bottom.color = "white", 
+              stub.border.color = "white", 
+              stub.border.width = px(0), 
+              source_notes.font.size = 12, 
+              source_notes.border.lr.style = "none", 
+              table.font.size = 12)
+
+```
+
+
+### Exposure Index
 
 ```{r cbsa_exposure_plot}
 #| echo: false
@@ -1197,25 +1192,177 @@ admin %>%
 
 cbsa %>% 
   select(year, cbsa23name,
-         xs_wht_blk, xs_wht_hsp, xs_wht_asn, xs_wht_nam, xs_wht_min, xs_was_min, xs_wht_nwh # Exposure
+         xs_wht_blk, xs_wht_hsp, xs_wht_asn, xs_wht_nam, xs_wht_nwh # Exposure
   ) %>% 
   rename(
     "White-Black" = "xs_wht_blk",
     "White-Hispanic" = "xs_wht_hsp",
     "White-Asian" = "xs_wht_asn",
     "White-Native American" = "xs_wht_nam",
-    "White-Minority" = "xs_wht_min",
-    "White/Asian-Minority" = "xs_was_min",
     "White-Non White" = "xs_wht_nwh"
   ) %>% 
   filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(
+    cbsa23name = str_extract_all(cbsa23name, "^[^-]+|(?<=, )[^-]+") %>% 
+      sapply(paste, collapse = ", ")
+    ) %>% 
   pivot_longer(c(-year, -cbsa23name), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~cbsa23name) +
+  labs(
+    # Main title label
+    title = "Exposure Index Across CBSA's in the US, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These are the top 20 CBSA's by Student Enrollment in 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Between School Exposure Index",
+    # Caption label
+    caption = "Sources: Stanford Segregation Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) 
+
+```
+
+```{r cbsa_expoure_plot_by_measure_prep}
+#| include: false
+
+cbsa.exp <- cbsa %>% 
+  select(year, cbsa23name,
+         xs_wht_blk, xs_wht_hsp, xs_wht_asn, xs_wht_nam, xs_wht_nwh # Exposure
+  ) %>% 
+  rename(
+    "White-Black" = "xs_wht_blk",
+    "White-Hispanic" = "xs_wht_hsp",
+    "White-Asian" = "xs_wht_asn",
+    "White-Native American" = "xs_wht_nam",
+    "White-Non White" = "xs_wht_nwh"
+  ) %>% 
+  filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(mpls = case_when(cbsa23name=="Minneapolis-St. Paul-Bloomington, MN-WI" ~ "Minneapolis-St. Paul-Bloomington, MN-WI",
+                          TRUE ~ "Other")) %>% 
+  pivot_longer(c(-year, -cbsa23name, -mpls), names_to = "type", values_to = "value")
+
+```
+
+
+```{r cbsa_expoure_plot_by_measure}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# CBSA Exposure Index -----------------------------------------------------
+
+ggplot() +
+  # geom_point(
+  #   data = cbsa.exp %>% filter(mpls=="Other"), 
+  #   aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  geom_line(
+    data = cbsa.exp %>% filter(mpls=="Other"), 
+    aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  # geom_point(
+  #   data = cbsa.exp %>% filter(mpls!="Other"), 
+  #   aes(x = year, y = value, color = mpls), size = 1) +
+  geom_line(
+    data = cbsa.exp %>% filter(mpls!="Other"), 
+    aes(x = year, y = value, color = mpls), size = 1) +
+  scale_color_manual(values = c("#FF0010FF", "grey70")) +
+  facet_wrap(~type) +
   labs(
     # Main title label
     title = "Exposure Index Across CBSA's in the US, 1991-2022",
@@ -1323,17 +1470,7 @@ cbsa %>%
 ```
 
 
-## Isolation Index
-
-Isolation index is a measure of...
-
-$$Isolation = \sum_{i=1}^{n} \left(\frac{B_i}{B} \right) \left(\frac{B{_i}}{T_i} \right)$$
-Where:
-
-- $B_i$ is the number of students of a particular racial group in a school $i$.
-- $B$ is the total number of students of the same racial group in the entire district.
-- $T_i$ is the total student enrollment of the district $i$.
-- $n$ is the number of schools in the district.
+### Isolation Index
 
 ```{r cbsa_isolation_plot}
 #| echo: false
@@ -1344,23 +1481,24 @@ Where:
 
 cbsa %>% 
   select(year, cbsa23name,
-         ss_wht_blk, ss_wht_hsp, ss_wht_asn, ss_wht_nam, ss_wht_min, ss_was_min, ss_wht_nwh # Isolation
+         ss_blk_wht, ss_hsp_wht, ss_asn_wht, ss_nam_wht, # Isolation
   ) %>% 
   rename(
-    "White-Black" = "ss_wht_blk",
-    "White-Hispanic" = "ss_wht_hsp",
-    "White-Asian" = "ss_wht_asn",
-    "White-Native American" = "ss_wht_nam",
-    "White-Minority" = "ss_wht_min",
-    "White/Asian-Minority" = "ss_was_min",
-    "White-Non White" = "ss_wht_nwh"
+    "Black Isolation" = "ss_blk_wht",
+    "Hispanic Isolation" = "ss_hsp_wht",
+    "Asian Isolation" = "ss_asn_wht",
+    "Native American Isolation" = "ss_nam_wht",
   ) %>%
   filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(
+    cbsa23name = str_extract_all(cbsa23name, "^[^-]+|(?<=, )[^-]+") %>% 
+      sapply(paste, collapse = ", ")
+    ) %>% 
   pivot_longer(c(-year, -cbsa23name), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~cbsa23name) +
   labs(
@@ -1469,7 +1607,156 @@ cbsa %>%
 
 ```
 
-## Normalized Exposure Index
+```{r cbsa_isolation_plot_by_measure_prep}
+#| include: false
+
+cbsa.isol <- cbsa %>% 
+  select(year, cbsa23name,
+         ss_blk_wht, ss_hsp_wht, ss_asn_wht, ss_nam_wht, # Isolation
+  ) %>% 
+  rename(
+    "Black Isolation" = "ss_blk_wht",
+    "Hispanic Isolation" = "ss_hsp_wht",
+    "Asian Isolation" = "ss_asn_wht",
+    "Native American Isolation" = "ss_nam_wht",
+  ) %>%
+  filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(mpls = case_when(cbsa23name=="Minneapolis-St. Paul-Bloomington, MN-WI" ~ "Minneapolis-St. Paul-Bloomington, MN-WI",
+                          TRUE ~ "Other")) %>% 
+  pivot_longer(c(-year, -cbsa23name, -mpls), names_to = "type", values_to = "value")
+
+```
+
+
+```{r cbsa_isolation_plot_by_measure}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# CBSA Isolation Index -----------------------------------------------------
+
+ggplot() +
+  # geom_point(
+  #   data = cbsa.isol %>% filter(mpls=="Other"), 
+  #   aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  geom_line(
+    data = cbsa.isol %>% filter(mpls=="Other"), 
+    aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  # geom_point(
+  #   data = cbsa.isol %>% filter(mpls!="Other"), 
+  #   aes(x = year, y = value, color = mpls), size = 1) +
+  geom_line(
+    data = cbsa.isol %>% filter(mpls!="Other"), 
+    aes(x = year, y = value, color = mpls), size = 1) +
+  scale_color_manual(values = c("#FF0010FF", "grey70")) +
+  facet_wrap(~type) +
+  labs(
+    # Main title label
+    title = "Isolation Index Across CBSA's in the US, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These are the top 20 CBSA's by Student Enrollment in 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Between School Isolation Index",
+    # Caption label
+    caption = "Sources: Stanford Segregation Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+### Normalized Exposure Index
 
 ```{r cbsa_normalized_exposure_plot}
 #| echo: false
@@ -1480,23 +1767,25 @@ cbsa %>%
 
 cbsa %>% 
   select(year, cbsa23name,
-         ns_wht_blk, ns_wht_hsp, ns_wht_asn, ns_wht_nam, ns_wht_min, ns_was_min, ns_wht_nwh # Normalized Exposure Index
+         ns_wht_blk, ns_wht_hsp, ns_wht_asn, ns_wht_nam, ns_wht_nwh # Normalized Exposure Index
   ) %>% 
   rename(
     "White-Black" = "ns_wht_blk",
     "White-Hispanic" = "ns_wht_hsp",
     "White-Asian" = "ns_wht_asn",
     "White-Native American" = "ns_wht_nam",
-    "White-Minority" = "ns_wht_min",
-    "White/Asian-Minority" = "ns_was_min",
     "White-Non White" = "ns_wht_nwh"
   ) %>%
   filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(
+    cbsa23name = str_extract_all(cbsa23name, "^[^-]+|(?<=, )[^-]+") %>% 
+      sapply(paste, collapse = ", ")
+    ) %>% 
   pivot_longer(c(-year, -cbsa23name), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~cbsa23name) +
   labs(
@@ -1605,22 +1894,157 @@ cbsa %>%
 
 ```
 
-## Dissimilarity Index
+```{r cbsa_nee_plot_by_measure_prep}
+#| include: false
 
-The Dissimilarity index is a measure of...
+cbsa.nee <- cbsa %>% 
+  select(year, cbsa23name,
+         ns_wht_blk, ns_wht_hsp, ns_wht_asn, ns_wht_nam, ns_wht_nwh # Normalized Exposure Index
+  ) %>% 
+  rename(
+    "White-Black" = "ns_wht_blk",
+    "White-Hispanic" = "ns_wht_hsp",
+    "White-Asian" = "ns_wht_asn",
+    "White-Native American" = "ns_wht_nam",
+    "White-Non White" = "ns_wht_nwh"
+  ) %>%
+  filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(mpls = case_when(cbsa23name=="Minneapolis-St. Paul-Bloomington, MN-WI" ~ "Minneapolis-St. Paul-Bloomington, MN-WI",
+                          TRUE ~ "Other")) %>% 
+  pivot_longer(c(-year, -cbsa23name, -mpls), names_to = "type", values_to = "value")
 
-Dissimilarity index was calculated following Wang et al.'s, methods found [here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9173588/#SD1). 
-
-$$Dissimilarity = \frac{1}{2} \sum_{i=1}^{n} \left|\frac{b_i}{B}  - \frac{w{_i}}{W} \right|$$
-Where:
-
-- $b_i$ is the number of students of a particular racial group in school $i$.
-- $B$ is the total number of students of the same racial group enrolled in the district.
-- $w_i$ is the number of white students in school $i$.
-- $W$ is the total number of white students enrolled in the district.
-- $n$ is the number of schools in the district.
+```
 
 
+```{r cbsa_nee_plot_by_measure}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# CBSA Normalized Exposure Index -----------------------------------------------------
+
+ggplot() +
+  # geom_point(
+  #   data = cbsa.nee %>% filter(mpls=="Other"), 
+  #   aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  geom_line(
+    data = cbsa.nee %>% filter(mpls=="Other"), 
+    aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  # geom_point(
+  #   data = cbsa.nee %>% filter(mpls!="Other"), 
+  #   aes(x = year, y = value, color = mpls), size = 1) +
+  geom_line(
+    data = cbsa.nee %>% filter(mpls!="Other"), 
+    aes(x = year, y = value, color = mpls), size = 1) +
+  scale_color_manual(values = c("#FF0010FF", "grey70")) +
+  facet_wrap(~type) +
+  labs(
+    # Main title label
+    title = "Normalized Exposure Index Across CBSA's in the US, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These are the top 20 CBSA's by Student Enrollment in 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Between School Normalized Exposure Index",
+    # Caption label
+    caption = "Sources: Stanford Segregation Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+### Dissimilarity Index
 
 ```{r cbsa_dissimilarity_plot}
 #| echo: false
@@ -1631,23 +2055,25 @@ Where:
 
 cbsa %>% 
   select(year, cbsa23name,
-         ds_wht_blk, ds_wht_hsp, ds_wht_asn, ds_wht_nam, ds_wht_min, ds_was_min, ds_wht_nwh # Dissimilarity
+         ds_wht_blk, ds_wht_hsp, ds_wht_asn, ds_wht_nam, ds_wht_nwh # Dissimilarity
   ) %>% 
   rename(
     "White-Black" = "ds_wht_blk",
     "White-Hispanic" = "ds_wht_hsp",
     "White-Asian" = "ds_wht_asn",
     "White-Native American" = "ds_wht_nam",
-    "White-Minority" = "ds_wht_min",
-    "White/Asian-Minority" = "ds_was_min",
     "White-Non White" = "ds_wht_nwh"
   ) %>% 
   filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(
+    cbsa23name = str_extract_all(cbsa23name, "^[^-]+|(?<=, )[^-]+") %>% 
+      sapply(paste, collapse = ", ")
+    ) %>% 
   pivot_longer(c(-year, -cbsa23name), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~cbsa23name) +
   labs(
@@ -1756,7 +2182,157 @@ cbsa %>%
 
 ```
 
-## Information Theory Index
+```{r cbsa_diss_plot_by_measure_prep}
+#| include: false
+
+cbsa.diss <- cbsa %>% 
+  select(year, cbsa23name,
+         ds_wht_blk, ds_wht_hsp, ds_wht_asn, ds_wht_nam, ds_wht_nwh # Dissimilarity
+  ) %>% 
+  rename(
+    "White-Black" = "ds_wht_blk",
+    "White-Hispanic" = "ds_wht_hsp",
+    "White-Asian" = "ds_wht_asn",
+    "White-Native American" = "ds_wht_nam",
+    "White-Non White" = "ds_wht_nwh"
+  ) %>% 
+  filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(mpls = case_when(cbsa23name=="Minneapolis-St. Paul-Bloomington, MN-WI" ~ "Minneapolis-St. Paul-Bloomington, MN-WI",
+                          TRUE ~ "Other")) %>% 
+  pivot_longer(c(-year, -cbsa23name, -mpls), names_to = "type", values_to = "value")
+
+```
+
+
+```{r cbsa_diss_plot_by_measure}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# CBSA Dissimilarity Index -----------------------------------------------------
+
+ggplot() +
+  # geom_point(
+  #   data = cbsa.diss %>% filter(mpls=="Other"), 
+  #   aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  geom_line(
+    data = cbsa.diss %>% filter(mpls=="Other"), 
+    aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  # geom_point(
+  #   data = cbsa.diss %>% filter(mpls!="Other"), 
+  #   aes(x = year, y = value, color = mpls), size = 1) +
+  geom_line(
+    data = cbsa.diss %>% filter(mpls!="Other"), 
+    aes(x = year, y = value, color = mpls), size = 1) +
+  scale_color_manual(values = c("#FF0010FF", "grey70")) +
+  facet_wrap(~type) +
+  labs(
+    # Main title label
+    title = "Dissimilarity Index Across CBSA's in the US, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These are the top 20 CBSA's by Student Enrollment in 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Between School Dissimilarity Index",
+    # Caption label
+    caption = "Sources: Stanford Segregation Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+### Information Theory Index
 
 ```{r cbsa_information_plot}
 #| echo: false
@@ -1767,23 +2343,25 @@ cbsa %>%
 
 cbsa %>% 
   select(year, cbsa23name,
-         hs_wht_blk, hs_wht_hsp, hs_wht_asn, hs_wht_nam, hs_wht_min, hs_was_min, hs_wht_nwh # Information Theory
+         hs_wht_blk, hs_wht_hsp, hs_wht_asn, hs_wht_nam, hs_wht_nwh # Information Theory
   ) %>% 
   rename(
     "White-Black" = "hs_wht_blk",
     "White-Hispanic" = "hs_wht_hsp",
     "White-Asian" = "hs_wht_asn",
     "White-Native American" = "hs_wht_nam",
-    "White-Minority" = "hs_wht_min",
-    "White/Asian-Minority" = "hs_was_min",
     "White-Non White" = "hs_wht_nwh"
   ) %>%  
   filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(
+    cbsa23name = str_extract_all(cbsa23name, "^[^-]+|(?<=, )[^-]+") %>% 
+      sapply(paste, collapse = ", ")
+    ) %>% 
   pivot_longer(c(-year, -cbsa23name), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~cbsa23name) +
   labs(
@@ -1892,7 +2470,158 @@ cbsa %>%
 
 ```
 
-## Difference in Exposure to Free Lunch
+```{r cbsa_info_plot_by_measure_prep}
+#| include: false
+
+cbsa.info <- cbsa %>% 
+  select(year, cbsa23name,
+         hs_wht_blk, hs_wht_hsp, hs_wht_asn, hs_wht_nam, hs_wht_nwh # Information Theory
+  ) %>% 
+  rename(
+    "White-Black" = "hs_wht_blk",
+    "White-Hispanic" = "hs_wht_hsp",
+    "White-Asian" = "hs_wht_asn",
+    "White-Native American" = "hs_wht_nam",
+    "White-Non White" = "hs_wht_nwh"
+  ) %>% 
+  filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(mpls = case_when(cbsa23name=="Minneapolis-St. Paul-Bloomington, MN-WI" ~ "Minneapolis-St. Paul-Bloomington, MN-WI",
+                          TRUE ~ "Other")) %>% 
+  pivot_longer(c(-year, -cbsa23name, -mpls), names_to = "type", values_to = "value")
+
+```
+
+
+```{r cbsa_info_plot_by_measure}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# CBSA Information Index -----------------------------------------------------
+
+ggplot() +
+  # geom_point(
+  #   data = cbsa.info %>% filter(mpls=="Other"), 
+  #   aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  geom_line(
+    data = cbsa.info %>% filter(mpls=="Other"), 
+    aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  # geom_point(
+  #   data = cbsa.info %>% filter(mpls!="Other"), 
+  #   aes(x = year, y = value, color = mpls), size = 1) +
+  geom_line(
+    data = cbsa.info %>% filter(mpls!="Other"), 
+    aes(x = year, y = value, color = mpls), size = 1) +
+  scale_color_manual(values = c("#FF0010FF", "grey70")) +
+  facet_wrap(~type) +
+  labs(
+    # Main title label
+    title = "Information Theory Index Across CBSA's in the US, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These are the top 20 CBSA's by Student Enrollment in 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Between School Information Theory Index",
+    # Caption label
+    caption = "Sources: Stanford Segregation Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+
+### Difference in Exposure to Free Lunch
 
 ```{r cbsa_free_lunch_plot}
 #| echo: false
@@ -1911,11 +2640,15 @@ cbsa %>%
     "Minority-White" = "zs_min_wht"
   ) %>% 
   filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(
+    cbsa23name = str_extract_all(cbsa23name, "^[^-]+|(?<=, )[^-]+") %>% 
+      sapply(paste, collapse = ", ")
+    ) %>% 
   pivot_longer(c(-year, -cbsa23name), names_to = "type", values_to = "value") %>% 
   ggplot() +
   aes(x = year, y = value, color = type) +
-  geom_point(size = 1) +
-  geom_line(size = 0.6) +
+  # geom_point(size = 1) +
+  geom_line(size = 1) +
   scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51", "#bdadea", "#a7c957")) +
   facet_wrap(~cbsa23name) +
   labs(
@@ -2025,8 +2758,154 @@ cbsa %>%
 
 ```
 
+```{r cbsa_frlunch_plot_by_measure_prep}
+#| include: false
+
+cbsa.frlunch <- cbsa %>% 
+  select(year, cbsa23name,
+         zs_blk_wht, zs_hsp_wht, zs_min_wht # Difference in Exposure to Free Lunch
+  ) %>% 
+  rename(
+    "Black-White" = "zs_blk_wht",
+    "Hispanic-White" = "zs_hsp_wht",
+    "Minority-White" = "zs_min_wht"
+  ) %>% 
+  filter(cbsa23name %in% top.cbsas) %>% 
+  mutate(mpls = case_when(cbsa23name=="Minneapolis-St. Paul-Bloomington, MN-WI" ~ "Minneapolis-St. Paul-Bloomington, MN-WI",
+                          TRUE ~ "Other")) %>% 
+  pivot_longer(c(-year, -cbsa23name, -mpls), names_to = "type", values_to = "value")
+
+```
+
+
+```{r cbsa_frlunch_plot_by_measure}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+# CBSA Expsoure to Free Lunch -----------------------------------------------------
+
+ggplot() +
+  # geom_point(
+  #   data = cbsa.info %>% filter(mpls=="Other"), 
+  #   aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  geom_line(
+    data = cbsa.frlunch %>% filter(mpls=="Other"), 
+    aes(x = year, y = value, color = mpls, group = cbsa23name), size = 1) +
+  # geom_point(
+  #   data = cbsa.info %>% filter(mpls!="Other"), 
+  #   aes(x = year, y = value, color = mpls), size = 1) +
+  geom_line(
+    data = cbsa.frlunch %>% filter(mpls!="Other"), 
+    aes(x = year, y = value, color = mpls), size = 1) +
+  scale_color_manual(values = c("#FF0010FF", "grey70")) +
+  facet_wrap(~type) +
+  labs(
+    # Main title label
+    title = "Difference in Exposure to Free Lunch Across CBSA's in the US, 1991-2022",
+    # Subtitle label
+    subtitle = paste0("These are the top 20 CBSA's by Student Enrollment in 2022"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Between School Difference in Exposure to Free Lunch ",
+    # Caption label
+    caption = "Sources: Stanford Segregation Data.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 16,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 20,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
 
 # Index Selection
-
-
 
