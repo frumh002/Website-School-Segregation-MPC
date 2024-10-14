@@ -230,6 +230,7 @@ top.metro.districts.perc <- as.character(schools %>%
 
 ```{r black_tabl_prep}
 #| include: false
+#| echo: false
 
 tims.black <- schools %>% 
   filter(leaname %in% metro.districts2) %>% 
@@ -358,6 +359,7 @@ schools %>%
 
 ```{r asian_tabl_prep}
 #| include: false
+#| echo: false
 
 tims.asian <- schools %>% 
   filter(leaname %in% metro.districts2) %>% 
@@ -486,6 +488,7 @@ schools %>%
 
 ```{r hisp_tabl_prep}
 #| include: false
+#| echo: false
 
 # Table of Hispanic Enrollment in Metro School Districts ------------------
 
@@ -614,6 +617,7 @@ schools %>%
 
 ```{r bipoc_tabl_prep}
 #| include: false
+#| echo: false
 
 # Table of BIPOC Enrollment in Metro School Districts ------------------
 
