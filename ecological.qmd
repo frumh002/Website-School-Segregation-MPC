@@ -326,7 +326,7 @@ grad <- schools %>%
 ```{r}
 #| echo: false
 
-elem %>% 
+
   
 # difference from the average % black, hispanic, of the district to the school
 # 
@@ -471,7 +471,7 @@ elem.21 <- elem %>%
 ```
 
 
-```{r elem.01}
+```{r elem_03}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -489,7 +489,7 @@ elem.03 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro Elementary Schools, 2003",
@@ -606,7 +606,7 @@ elem.03 %>%
 
 ```
 
-```{r}
+```{r elem_11}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -624,7 +624,7 @@ elem.11 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro Elementary Schools, 2011",
@@ -742,7 +742,7 @@ elem.11 %>%
 ```
 
 
-```{r}
+```{r elem_21}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -760,7 +760,7 @@ elem.21 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro Elementary Schools, 2021",
@@ -885,7 +885,7 @@ elem.21 %>%
 The correlation matrix below shows middle schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years. 
 :::
 
-```{r elem_corr_prep}
+```{r middl_corr_prep}
 #| echo: false
 
 # md.03 <- middl %>% 
@@ -960,7 +960,7 @@ middl.21 <- middl %>%
 ```
 
 
-```{r elem.01}
+```{r middl_03}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -978,7 +978,7 @@ middl.03 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro Middle Schools, 2003",
@@ -1095,7 +1095,7 @@ middl.03 %>%
 
 ```
 
-```{r}
+```{r middl_11}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -1113,7 +1113,7 @@ middl.11 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro Middle Schools, 2011",
@@ -1231,7 +1231,7 @@ middl.11 %>%
 ```
 
 
-```{r}
+```{r middl_21}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -1249,7 +1249,7 @@ middl.21 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro Middle Schools, 2021",
@@ -1375,7 +1375,7 @@ middl.21 %>%
 The correlation matrix below shows high schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.
 :::
 
-```{r elem_corr_prep}
+```{r high_corr_prep}
 #| echo: false
 
 # Correlation Matrices
@@ -1456,7 +1456,7 @@ high.21 <- high %>%
 ```
 
 
-```{r elem.01}
+```{r high_03}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -1474,7 +1474,7 @@ high.03 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro High Schools, 2003",
@@ -1591,7 +1591,7 @@ high.03 %>%
 
 ```
 
-```{r}
+```{r high_11}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -1609,7 +1609,7 @@ high.11 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro High Schools, 2011",
@@ -1727,7 +1727,7 @@ high.11 %>%
 ```
 
 
-```{r}
+```{r high_21}
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
@@ -1745,7 +1745,7 @@ high.21 %>%
     midpoint = 0, 
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 2) +
+  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
   labs(
     # Main title label
     title = "Correlations Across Metro High Schools, 2021",
