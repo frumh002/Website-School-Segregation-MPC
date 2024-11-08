@@ -229,7 +229,6 @@ top.metro.districts.perc <- as.character(schools %>%
 
 
 ```{r black_tabl_prep}
-#| include: false
 #| echo: false
 
 tims.black <- schools %>% 
@@ -325,6 +324,8 @@ schools %>%
             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>% 
   tab_style(locations = cells_column_spanners(spanners = "Count"), 
             style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>% 
+  tab_style(locations = cells_column_spanners(spanners = "Percent of TC Metro"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>%
   tab_style(locations = cells_title("subtitle"), 
             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>% 
   tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
@@ -358,7 +359,6 @@ schools %>%
 ## Asian Student Enrollment Over Time
 
 ```{r asian_tabl_prep}
-#| include: false
 #| echo: false
 
 tims.asian <- schools %>% 
@@ -454,6 +454,8 @@ schools %>%
             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>% 
   tab_style(locations = cells_column_spanners(spanners = "Count"), 
             style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>% 
+  tab_style(locations = cells_column_spanners(spanners = "Percent of TC Metro"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>%
   tab_style(locations = cells_title("subtitle"), 
             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>% 
   tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
@@ -487,7 +489,6 @@ schools %>%
 ## Hispanic/Latin@ Student Enrollment Over Time
 
 ```{r hisp_tabl_prep}
-#| include: false
 #| echo: false
 
 # Table of Hispanic Enrollment in Metro School Districts ------------------
@@ -583,6 +584,8 @@ schools %>%
             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>% 
   tab_style(locations = cells_column_spanners(spanners = "Count"), 
             style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>% 
+  tab_style(locations = cells_column_spanners(spanners = "Percent of TC Metro"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>%
   tab_style(locations = cells_title("subtitle"), 
             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>% 
   tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
@@ -616,7 +619,6 @@ schools %>%
 ## BOPIC Student Enrollment Over Time
 
 ```{r bipoc_tabl_prep}
-#| include: false
 #| echo: false
 
 # Table of BIPOC Enrollment in Metro School Districts ------------------
@@ -639,105 +641,242 @@ tims.distr <- distr.dems %>%
 ```{r bipoc_tabl}
 #| echo: false
 
-# distr.dems %>% 
-#   filter(leaname %in% metro.districts2, year %in% c(1991, 2001, 2011, 2022)) %>% 
-#   select(year, leaname, distr_member, distr_bipoc) %>% 
-#   mutate(
-#    perc = distr_bipoc / distr_member 
-#   ) %>%
-#   select(-distr_member) %>% 
-#   pivot_wider(names_from = "year", values_from = c("distr_bipoc", "perc")) %>% 
-#   left_join(tims.distr, by = "leaname") %>% 
-#   arrange(desc(perc_2022)) %>% 
-#   mutate(perc_run = cumsum(perc_2022)) %>% 
-#   ungroup() %>% 
-#   gt() %>% 
-#   fmt_percent(
-#     columns = starts_with("perc"),
-#     decimals = 1
-#   ) %>% 
-#   fmt_integer(
-#     columns = starts_with("distr_bipoc"),
-#   ) %>% 
-#   gt_plt_sparkline(
-#     column = tms,
-#     type = "shaded",
-#     palette = c("grey40", "grey40", "red", "blue", "grey40"),
-#     fig_dim = c(7, 28)
-#   ) %>% 
-#   gt_highlight_rows(
-#     rows = which(perc_run<0.51),
-#     font_weight = "normal",
-#     fill = "grey90"
-#   ) %>% 
-#   tab_header(
-#     title = "Twin Cities Metro School District Hispanic/Latin@ Student Enrollment Over Time",
-#     subtitle = "1991-2022 Enrollment from MDE Public File"
-#   ) %>% 
-#   opt_align_table_header(align = "center") %>% 
-#   cols_align(
-#     align = c("center"),
-#     columns = everything()
-#   ) %>% 
-#   tab_spanner(label = "Count", columns = starts_with("distr_bipoc")) %>% 
-#   tab_spanner(label = "Percent of TC Metro", columns = starts_with("perc")) %>% 
-#   tab_footnote(
-#     footnote = "The proportion of TC Metro enrollment between 1991-2022. Blue dot indicates the highest enrollment proportion and red indicates the lowest proportion enrollment. The text indicates the most recent enrollment proportion.",
-#     locations = cells_column_labels(columns = tms)
-#   ) %>% 
-#   tab_footnote(
-#     footnote = "The highlighted rows make up 50% of the entire TC metro enrollment for Hispanic/Latin@ students.",
-#     locations = cells_column_labels(columns = leaname)
-#   ) %>%
-#   tab_source_note(
-#     source_note = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment."
-#   ) %>% 
-#   cols_label(
-#     leaname = "School District",
-#     distr_bipoc_1991 = "1991",
-#     distr_bipoc_2001 = "2001",
-#     distr_bipoc_2011 = "2011",
-#     distr_bipoc_2022= "2022",
-#     perc_1991 = "1991",
-#     perc_2001 = "2001",
-#     perc_2011 = "2011",
-#     perc_2022 = "2022",
-#     tms = "Percent Over Time",
-#     perc_run = "2022 Cumulative"
-#   ) %>%
-#   tab_style(locations = cells_body(),
-#             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 400)) %>% 
-#   tab_style(locations = cells_title("title"), 
-#             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>% 
-#   tab_style(locations = cells_column_spanners(spanners = "Count"), 
-#             style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>% 
-#   tab_style(locations = cells_title("subtitle"), 
-#             style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>% 
-#   tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
-#             locations = gt::cells_column_labels(columns = gt::everything())) %>%
-#   tab_style(style = cell_borders(sides = "bottom", 
-#                                  color = "black", 
-#                                  weight = px(1)), 
-#             locations = cells_row_groups()) %>% 
-#   tab_options(column_labels.background.color = "white", 
-#               data_row.padding = px(3), 
-#               heading.border.bottom.style = "none", 
-#               table.border.top.width = px(3), 
-#               table.border.top.style = "none", 
-#               table.border.bottom.style = "none", 
-#               column_labels.font.weight = "normal", 
-#               column_labels.border.top.style = "none", 
-#               column_labels.border.bottom.width = px(2), 
-#               column_labels.border.bottom.color = "black", 
-#               row_group.border.top.style = "none", 
-#               row_group.border.top.color = "black", 
-#               row_group.border.bottom.width = px(1), 
-#               row_group.border.bottom.color = "white", 
-#               stub.border.color = "white", 
-#               stub.border.width = px(0), 
-#               source_notes.font.size = 12, 
-#               source_notes.border.lr.style = "none", 
-#               table.font.size = 12)
+schools %>% 
+  filter(leaname %in% metro.districts2, year %in% c(1991, 2001, 2011, 2022)) %>% 
+  select(year, leaname, tot_hisp) %>% 
+  mutate(tot_hisp = floor(tot_hisp)) %>% 
+  group_by(year, leaname) %>%
+  summarise(tot = sum(tot_hisp)) %>% 
+  mutate(perc = tot/sum(tot))
+
+distr.dems %>%
+  filter(leaname %in% metro.districts2, year %in% c(1991, 2001, 2011, 2022)) %>%
+  select(year, leaname, distr_bipoc) %>%
+  group_by(year) %>% 
+  mutate(perc = distr_bipoc / sum(distr_bipoc)) %>%
+  pivot_wider(names_from = "year", values_from = c("distr_bipoc", "perc")) %>%
+  left_join(tims.distr, by = "leaname") %>%
+  arrange(desc(perc_2022)) %>%
+  mutate(perc_run = cumsum(perc_2022)) %>%
+  ungroup() %>%
+  gt() %>%
+  fmt_percent(
+    columns = starts_with("perc"),
+    decimals = 1
+  ) %>%
+  fmt_integer(
+    columns = starts_with("distr_bipoc"),
+  ) %>%
+  gt_plt_sparkline(
+    column = tms,
+    type = "shaded",
+    palette = c("grey40", "grey40", "red", "blue", "grey40"),
+    fig_dim = c(7, 28)
+  ) %>%
+  gt_highlight_rows(
+    rows = which(perc_run<0.51),
+    font_weight = "normal",
+    fill = "grey90"
+  ) %>%
+  tab_header(
+    title = "Twin Cities Metro School District Hispanic/Latin@ Student Enrollment Over Time",
+    subtitle = "1991-2022 Enrollment from MDE Public File"
+  ) %>%
+  opt_align_table_header(align = "center") %>%
+  cols_align(
+    align = c("center"),
+    columns = everything()
+  ) %>%
+  tab_spanner(label = "Count", columns = starts_with("distr_bipoc")) %>%
+  tab_spanner(label = "Percent of TC Metro", columns = starts_with("perc")) %>%
+  tab_footnote(
+    footnote = "The proportion of TC Metro enrollment between 1991-2022. Blue dot indicates the highest enrollment proportion and red indicates the lowest proportion enrollment. The text indicates the most recent enrollment proportion.",
+    locations = cells_column_labels(columns = tms)
+  ) %>%
+  tab_footnote(
+    footnote = "The highlighted rows make up 50% of the entire TC metro enrollment for Hispanic/Latin@ students.",
+    locations = cells_column_labels(columns = leaname)
+  ) %>%
+  tab_source_note(
+    source_note = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment."
+  ) %>%
+  cols_label(
+    leaname = "School District",
+    distr_bipoc_1991 = "1991",
+    distr_bipoc_2001 = "2001",
+    distr_bipoc_2011 = "2011",
+    distr_bipoc_2022= "2022",
+    perc_1991 = "1991",
+    perc_2001 = "2001",
+    perc_2011 = "2011",
+    perc_2022 = "2022",
+    tms = "Percent Over Time",
+    perc_run = "2022 Cumulative"
+  ) %>%
+  tab_style(locations = cells_body(),
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 400)) %>%
+  tab_style(locations = cells_title("title"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>%
+  tab_style(locations = cells_column_spanners(spanners = "Count"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>%
+  tab_style(locations = cells_column_spanners(spanners = "Percent of TC Metro"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>%
+  tab_style(locations = cells_title("subtitle"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>%
+  tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
+            locations = gt::cells_column_labels(columns = gt::everything())) %>%
+  tab_style(style = cell_borders(sides = "bottom",
+                                 color = "black",
+                                 weight = px(1)),
+            locations = cells_row_groups()) %>%
+  tab_options(column_labels.background.color = "white",
+              data_row.padding = px(3),
+              heading.border.bottom.style = "none",
+              table.border.top.width = px(3),
+              table.border.top.style = "none",
+              table.border.bottom.style = "none",
+              column_labels.font.weight = "normal",
+              column_labels.border.top.style = "none",
+              column_labels.border.bottom.width = px(2),
+              column_labels.border.bottom.color = "black",
+              row_group.border.top.style = "none",
+              row_group.border.top.color = "black",
+              row_group.border.bottom.width = px(1),
+              row_group.border.bottom.color = "white",
+              stub.border.color = "white",
+              stub.border.width = px(0),
+              source_notes.font.size = 12,
+              source_notes.border.lr.style = "none",
+              table.font.size = 12)
+
+```
+
+## White Student Enrollment
+
+```{r whit_tabl_prep}
+#| echo: false
+
+# Table of White Enrollment in Metro School Districts ------------------
+
+tims.whits <- schools %>% 
+  filter(leaname %in% metro.districts2) %>% 
+  select(year, leaname, tot_white) %>% 
+  mutate(tot_white = floor(tot_white)) %>% 
+  group_by(year, leaname) %>%
+  summarise(tot = sum(tot_white)) %>% 
+  mutate(perc = round(tot/sum(tot), 3) *100) %>% 
+  select(leaname, year, perc) %>%
+  ungroup() %>% 
+  complete(leaname, year, fill = list(perc = 0)) %>% 
+  arrange(leaname, year) %>% 
+  group_by(leaname) %>%
+  summarise(tms = list(c(perc)))
+
+```
+
+```{r white_tabl}
+#| echo: false
+
+schools %>% 
+  filter(leaname %in% metro.districts2, year %in% c(1991, 2001, 2011, 2022)) %>% 
+  select(year, leaname, tot_white) %>% 
+  mutate(tot_white = floor(tot_white)) %>% 
+  group_by(year, leaname) %>%
+  summarise(tot = sum(tot_white)) %>% 
+  mutate(perc = tot/sum(tot)) %>% 
+  pivot_wider(names_from = "year", values_from = c("tot", "perc")) %>% 
+  left_join(tims.whits, by = "leaname") %>% 
+  arrange(desc(perc_2022)) %>% 
+  mutate(perc_run = cumsum(perc_2022)) %>% 
+  gt() %>% 
+  fmt_percent(
+    columns = starts_with("perc"),
+    decimals = 1
+  ) %>% 
+  fmt_integer(
+    columns = starts_with("tot"),
+  ) %>% 
+  gt_plt_sparkline(
+    column = tms,
+    type = "shaded",
+    palette = c("grey40", "grey40", "red", "blue", "grey40"),
+    fig_dim = c(7, 28)
+  ) %>% 
+  gt_highlight_rows(
+    rows = which(perc_run<0.51),
+    font_weight = "normal",
+    fill = "grey90"
+  ) %>% 
+  tab_header(
+    title = "Twin Cities Metro School District White Student Enrollment Over Time",
+    subtitle = "1991-2022 Enrollment from MDE Public File"
+  ) %>% 
+  opt_align_table_header(align = "center") %>% 
+  cols_align(
+    align = c("center"),
+    columns = everything()
+  ) %>% 
+  tab_spanner(label = "Count", columns = starts_with("tot")) %>% 
+  tab_spanner(label = "Percent of TC Metro", columns = starts_with("perc")) %>% 
+  tab_footnote(
+    footnote = "The proportion of TC Metro enrollment between 1991-2022. Blue dot indicates the highest enrollment proportion and red indicates the lowest proportion enrollment. The text indicates the most recent enrollment proportion.",
+    locations = cells_column_labels(columns = tms)
+  ) %>% 
+  tab_footnote(
+    footnote = "The highlighted rows make up 50% of the entire TC metro enrollment for Hispanic/Latin@ students.",
+    locations = cells_column_labels(columns = leaname)
+  ) %>%
+  tab_source_note(
+    source_note = "Data source is the Stanford NCES Dataset for 1991-2022 Enrollment."
+  ) %>% 
+  cols_label(
+    leaname = "School District",
+    tot_1991 = "1991",
+    tot_2001 = "2001",
+    tot_2011 = "2011",
+    tot_2022= "2022",
+    perc_1991 = "1991",
+    perc_2001 = "2001",
+    perc_2011 = "2011",
+    perc_2022 = "2022",
+    tms = "Percent Over Time",
+    perc_run = "2022 Cumulative"
+  ) %>%
+  tab_style(locations = cells_body(),
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 400)) %>% 
+  tab_style(locations = cells_title("title"), 
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 700)) %>% 
+  tab_style(locations = cells_column_spanners(spanners = "Count"), 
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>% 
+  tab_style(locations = cells_column_spanners(spanners = "Percent of TC Metro"),
+            style = cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)) %>%
+  tab_style(locations = cells_title("subtitle"), 
+            style = cell_text(transform = "uppercase", v_align = "bottom", weight = 500)) %>% 
+  tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
+            locations = gt::cells_column_labels(columns = gt::everything())) %>%
+  tab_style(style = cell_borders(sides = "bottom", 
+                                 color = "black", 
+                                 weight = px(1)), 
+            locations = cells_row_groups()) %>% 
+  tab_options(column_labels.background.color = "white", 
+              data_row.padding = px(3), 
+              heading.border.bottom.style = "none", 
+              table.border.top.width = px(3), 
+              table.border.top.style = "none", 
+              table.border.bottom.style = "none", 
+              column_labels.font.weight = "normal", 
+              column_labels.border.top.style = "none", 
+              column_labels.border.bottom.width = px(2), 
+              column_labels.border.bottom.color = "black", 
+              row_group.border.top.style = "none", 
+              row_group.border.top.color = "black", 
+              row_group.border.bottom.width = px(1), 
+              row_group.border.bottom.color = "white", 
+              stub.border.color = "white", 
+              stub.border.width = px(0), 
+              source_notes.font.size = 12, 
+              source_notes.border.lr.style = "none", 
+              table.font.size = 12)
 
 ```
 

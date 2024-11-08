@@ -20,12 +20,18 @@ website:
     contents: 
       - href: index.qmd
         text: Home
-      - cbsademographics.qmd
-      - schoolsegdesc.qmd
-      - schoolsegindex.qmd
-      - schoolclosures.qmd
-      - ecological.qmd
-      - suppmaterials.qmd
+      - href: cbsademographics.qmd
+        text: Demographics
+      - href: schoolsegdesc.qmd
+        text: Descriptive Schools
+      - href: schoolsegindex.qmd
+        text: Segregation Indices
+      - href: schoolclosures.qmd
+        text: School Closures
+      - href: ecological.qmd
+        text: Ecological Analysis
+      - href: suppmaterials.qmd
+        text: Appendix
     
 format:
   html:

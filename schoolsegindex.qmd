@@ -406,6 +406,18 @@ Where:
 - $T_i$ is the total student enrollment of the district $i$.
 - $n$ is the number of schools in the district.
 
+The isolation index created by Education Opportunity, the source of this data, differs slighlty in the method and interpretation of this index. Rather than the multiplying the race-specific school proportion to the race-specific district total population, they narrow the total district population to specific racial groups. For exmaple, their white-black isolation is the average proportion white of the total white and black students in a school, in the average white student’s school, represented as:
+
+$$Isolation = \sum_{i=1}^{n} \left(\frac{W_i}{W} \right) \left(\frac{W{_i}}{W_i + B_i} \right)$$
+Where:
+
+- $W_i$ is the number of white students in a school $i$.
+- $W$ is the total number of white students in the entire district.
+- $B_i$ is the total number student of Black students in the district $i$.
+- $n$ is the number of schools in the district.
+
+The standard white isolation index is ss_wht_nwh
+
 ::: {.callout-important}
 ## Isolation Index Metrics
 I have not yet understood which are the Isolation Index measures we should use from Stanford's Administrative dataset. There are many to choose from. We also have to identify what geographies we want to measure across.
@@ -2908,4 +2920,6 @@ ggplot() +
 
 
 # Index Selection
+
+
 

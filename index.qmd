@@ -9,17 +9,6 @@ format:
     embed-resources: true
 ---
 
-# Questions for the group
+# Twin Cities Metro School Districts
 
-1. There seems to be conflicting information regarding what schools are metro vs. not?
-- MDE considers any school in the 7 county metro area to be metro.
-2. Some school districts have common names (St. Paul Public School District vs. Saint Paul Public Schools | Eden Prairie vs. Eden Paririe Public School District | etc.) - do we merge these or are they separate districts?
-- Look at NCES7ID to make sure the same
-3. The total enrollment seems to be a decimal. Is it appropriate to round down? (conservative)
-- Yes
-4. Many schools are missing level over time, and some have conflicting levels (High School in 2011 and 2013 but Other/Ungraded in 2012). Can we impute standard levels across schools?
-- Flag those that you are imputing that have changing school levels. Do a random sample of 10 schools. Look at ed opportunity for school level data missingness and also the 86-22 school dataset on google drive. 
-5. Hmong College Prep (and likely others) have some data quality issues (2010 has 100% hispanic students - assuming data entry error) can we correct these instances?
-- Look at MDE's data to correct these instances
-6. Which free/reduced lunch/measure do we use? Manual or the imputed values? Manual is more conservative.
-- Use imputed
+- Map of metro school districts
