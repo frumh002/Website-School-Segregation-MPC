@@ -33,29 +33,16 @@ To do:
 - Census CBSA and place==Minneapolis
 - 1-year ACS estimates for 5-17 year olds from 2001-2022
 - Explore Civil Rights Dataset and what shcools are there compared to metro overall, are they representative of the metro area?
-- Sequence index of segregation? Impute a sequence to gauge clustering?
-
-PELSB outcomes:
-- average years of teacher experience
-- new teacher
-- proportion of teachers in Experience 1 to 5 years
-- proportion without a graduate degree (group BA and less than BA and unknown and group Masters and PhD)
-- average age of teacher
-- proportion of teachers less than 30 vs. greater than 30
-
-- Math and Reading for 3rd, 7th, 11th
-
-- four year graduation percent
-- four year dropout percent
 
 - Integration 
 
 - What does the four year graduation rate mean? The proportion of students
-- does graduation rate correlate with droupout rate
-No - someone could have graduated, dropped out, or been held back?
-- correlation matrix among all variables
 
 
+Recode trends in ecological analysis so that the scales are the same (reverse code)
+Subtitle, school racial composition, district segregation, teacher, test scores
+N of schools and districts that are in this plot
+Do associations change over time
 
 *This repo was initially generated from a Quarto template available here: https://github.com/jtr13/website-template.*
 

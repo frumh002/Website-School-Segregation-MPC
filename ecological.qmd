@@ -149,6 +149,14 @@ admin <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segreg
 mdex <- read_excel("/Users/mateofrumholtz/Dropbox/R Base/Projects/School Segregation/Data/NCES_MDE_lookup.xlsx") %>% 
   select(ncessch = "NCESID", DTSCHID = "DTSCHIDb")
 
+
+
+```
+
+
+```{r functions_prep}
+#| echo: false
+
 # Functions for correlation plots
 # Get upper triangle of the correlation matrix
 get_upper_tri <- function(cormat){
@@ -163,8 +171,266 @@ reorder_cormat <- function(cormat){
   cormat <-cormat[hc$order, hc$order]
 }
 
+# Function for combining correlations over time in elementary schools
+elem_corrs_fun <- function(data, years) {
+  # Initialize a list to store results
+  cor_matrices <- list()
+  
+  # Loop over each year
+  for (year in years) {
+    # Filter the data for the current year
+    yearly_data <- data %>%
+      filter(year == !!year)
+    
+    # Apply different column selections and renaming depending on the year 
+    if (year < 2006) {
+      yearly_data <- yearly_data %>%
+        select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>%
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_me_m3" = "m3_perc_me",
+          "p_me_r3" = "r3_perc_me"
+        )
+    } else if (year == 2019) {  # Special case for year 2019 since there was no MCA due to COVID-19
+      yearly_data <- yearly_data %>%
+        select(-year, -m3_perc_me, -r3_perc_me) %>%  
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_exp15" = "perc_exp15"
+        )
+    } else {  # For years after 2006 except 2019
+      yearly_data <- yearly_data %>%
+        select(-year) %>%
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_me_m3" = "m3_perc_me",
+          "p_me_r3" = "r3_perc_me",
+          "p_exp15" = "perc_exp15"
+        )
+    }
+    
+    # Continue with the renaming and correlation steps
+    cor_matrix <- yearly_data %>%
+      cor(use = "complete.obs") %>% 
+      reorder_cormat() %>% 
+      melt() %>% 
+      mutate(year = year)
+    
+    cor_matrix_df <- as.data.frame(cor_matrix)
+    
+    # Store the correlation matrix in the list
+    cor_matrices[[as.character(year)]] <- cor_matrix_df
+  }
+  
+  # Combine all correlation matrices into one data frame or list
+  combined_data <- do.call(rbind, cor_matrices)
+  
+  # Return the combined dataset
+  return(combined_data)
+}
+
+# Function for combining correlations over time in middle schools
+middl_corrs_fun <- function(data, years) {
+  # Initialize a list to store results
+  cor_matrices <- list()
+  
+  # Loop over each year
+  for (year in years) {
+    # Filter the data for the current year
+    yearly_data <- data %>%
+      filter(year == !!year)
+    
+    # Apply different column selections and renaming depending on the year 
+    if (year < 2003) {
+      yearly_data <- yearly_data %>%
+        select(-year, -perc_nograd, -perc_nt, -perc_exp15, -m7_perc_me, -r7_perc_me) %>%
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk"
+        )
+    } else if (year %in% c(2003:2005)) { 
+      yearly_data <- yearly_data %>%
+        select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>%  
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_me_m7" = "m7_perc_me",
+          "p_me_r7" = "r7_perc_me"
+        )
+    } else if (year == 2019) {  # Special case for year 2019 since there was no MCA due to COVID-19
+      yearly_data <- yearly_data %>%
+        select(-year, -m7_perc_me, -r7_perc_me) %>%  
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_exp15" = "perc_exp15"
+        )
+    } else {  # For years 2005 except 2019
+      yearly_data <- yearly_data %>%
+        select(-year) %>%
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_me_m7" = "m7_perc_me",
+          "p_me_r7" = "r7_perc_me",
+          "p_exp15" = "perc_exp15"
+        )
+    }
+    
+    # Continue with the renaming and correlation steps
+    cor_matrix <- yearly_data %>%
+      cor(use = "complete.obs") %>% 
+      reorder_cormat() %>% 
+      melt() %>% 
+      mutate(year = year)
+    
+    cor_matrix_df <- as.data.frame(cor_matrix)
+    
+    # Store the correlation matrix in the list
+    cor_matrices[[as.character(year)]] <- cor_matrix_df
+  }
+  
+  # Combine all correlation matrices into one data frame or list
+  combined_data <- do.call(rbind, cor_matrices)
+  
+  # Return the combined dataset
+  return(combined_data)
+}
+
+
+# Function for combining correlations over time in high schools
+high_corrs_fun <- function(data, years) {
+  # Initialize a list to store results
+  cor_matrices <- list()
+  
+  # Loop over each year
+  for (year in years) {
+    # Filter the data for the current year
+    yearly_data <- data %>%
+      filter(year == !!year)
+    
+    # Apply different column selections and renaming depending on the year 
+    if (year < 2003) {
+      yearly_data <- yearly_data %>%
+        select(-year, -perc_nograd, -perc_nt, -perc_exp15, -m11_perc_me, -r10_perc_me, -perc_four_grad, -perc_four_drop) %>%
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk"
+        )
+    } else if (year %in% c(2003:2005)) { 
+      yearly_data <- yearly_data %>%
+        select(-year, -perc_nograd, -perc_nt, -perc_exp15, -perc_four_grad, -perc_four_drop) %>%  
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_me_m11" = "m11_perc_me",
+          "p_me_r10" = "r10_perc_me"
+        )
+    } else if (year %in% c(2006:2010)) { 
+      yearly_data <- yearly_data %>%
+        select(-year, -perc_four_grad, -perc_four_drop) %>%  
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_exp15" = "perc_exp15",
+          "p_me_m11" = "m11_perc_me",
+          "p_me_r10" = "r10_perc_me"
+        )
+    } else if (year == 2019) {  # Special case for year 2019 since there was no MCA due to COVID-19
+      yearly_data <- yearly_data %>%
+        select(-year, -m11_perc_me, -r10_perc_me) %>%  
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_exp15" = "perc_exp15"
+        )
+    } else {  # For years 2005 except 2019
+      yearly_data <- yearly_data %>%
+        select(-year) %>%
+        rename(
+          "p_b" = "perblack",
+          "p_h" = "perhisp",
+          "p_wh" = "perwhite",
+          "p_frl" = "perfrlunch",
+          "wb_nei" = "ns_wht_blk",
+          "p_nt" = "perc_nt",
+          "p_nogr" = "perc_nograd",
+          "p_me_m11" = "m11_perc_me",
+          "p_me_r10" = "r10_perc_me",
+          "p_exp15" = "perc_exp15"
+        )
+    }
+    
+    # Continue with the renaming and correlation steps
+    cor_matrix <- yearly_data %>%
+      cor(use = "complete.obs") %>% 
+      reorder_cormat() %>% 
+      melt() %>% 
+      mutate(year = year)
+    
+    cor_matrix_df <- as.data.frame(cor_matrix)
+    
+    # Store the correlation matrix in the list
+    cor_matrices[[as.character(year)]] <- cor_matrix_df
+  }
+  
+  # Combine all correlation matrices into one data frame or list
+  combined_data <- do.call(rbind, cor_matrices)
+  
+  # Return the combined dataset
+  return(combined_data)
+}
 
 ```
+
 
 :::{.callout-note}
 ## Segregation Metrics
@@ -173,7 +439,7 @@ Unless otherwise noted, the segregation metric used across most of these analysi
 
 
 ```{r ecol_prep}
-#| include: false
+#| echo: false
 
 # An explanation for this chunk of code:
 # The ecological dataset is pretty messy and includes a lot of duplicate entries. I am thus taking the variables I need from that dataset, creating the metrics of interest, and then left joining them to the standard school NCES dataset we know is a complete account of schools over time. 
@@ -318,12 +584,14 @@ grad <- schools %>%
   left_join(admin, by = c("leaid", "year")) %>% 
   left_join(grad.rates, by = c("ncessch", "leaid", "year"))
 
+corrs <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>% 
+  left_join(mca, by = c("ncessch", "year", "leaid"))
 
 ```
 
 
 
-```{r}
+```{r notes}
 #| echo: false
 
 
@@ -335,17 +603,14 @@ grad <- schools %>%
 ```
 
 
-# Ecological Correlation Matrices
-
 ```{r level_corr_prep}
 #| echo: false
 
-elem <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>% 
-  left_join(mca, by = c("ncessch", "year", "leaid")) %>%
+elem <- corrs %>%
   filter(
     level=="Elementary/Primary",  
     member>=50, 
-    year %in% c(2003, 2011, 2021),
+    year>=2001,
     leaname.x %in% metro.districts2) %>% 
   select(
     # ADMIN
@@ -355,12 +620,11 @@ elem <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>%
     # MCA
     m3_perc_me, r3_perc_me)
 
-middl <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>% 
-  left_join(mca, by = c("ncessch", "year", "leaid")) %>%
+middl <- corrs %>%
   filter(
     level=="Middle", 
     member>=50, 
-    year %in% c(2003, 2011, 2021)) %>% 
+    year>=2001) %>% 
   select(
     # ADMIN
     year, perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
@@ -369,12 +633,11 @@ middl <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>%
     # MCA
     m7_perc_me, r7_perc_me)
 
-high <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>% 
-  left_join(mca, by = c("ncessch", "year", "leaid")) %>%
+high <- corrs %>%
   filter(
     level=="High/Secondary",  
     member>=50, 
-    year %in% c(2003, 2011, 2021)) %>% 
+    year>=2001) %>% 
   select(
     # ADMIN
     year, perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
@@ -384,11 +647,303 @@ high <- left_join(teach, grad, by = c("ncessch", "year", "leaid")) %>%
     perc_four_grad, perc_four_drop,
     # MCA
     m11_perc_me, r10_perc_me)
-  
+
 
 ```
 
-## Metro Elementary Schools
+# Ecological Data Variables
+The reference table below will serve as the list of variables for the figures represented in correlation analysis. Please reference this table as needed to identify variables across those figures. 
+
+```{r}
+#| echo: false
+#| tbl-cap: tbl-vars
+#| label: Variable list for correlation matrices
+
+corrs %>% 
+  select(
+    # ADMIN
+    perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
+    # PESLB
+    perc_nt, perc_exp15, perc_nograd, 
+    # GRADUATION
+    perc_four_grad, perc_four_drop,
+    # MCA
+    m3_perc_me, r3_perc_me, m7_perc_me, r7_perc_me, m11_perc_me, r10_perc_me) %>% 
+  rename(
+    "p_b" = "perblack",
+    "p_h" = "perhisp",
+    "p_wh" = "perwhite",
+    "p_frl" = "perfrlunch",
+    "wb_nei" = "ns_wht_blk",
+    "p_nt" = "perc_nt",
+    "p_nogr" = "perc_nograd",
+    "p_me_m3" = "m3_perc_me",
+    "p_me_r3" = "r3_perc_me",
+    "p_me_m7" = "m7_perc_me",
+    "p_me_r7" = "r7_perc_me",
+    "p_me_m11" = "m11_perc_me",
+    "p_me_r10" = "r10_perc_me",
+    "p_exp15" = "perc_exp15",
+    "p_4gr" = "perc_four_grad",
+    "p_4dr" = "perc_four_drop",
+  ) %>% 
+  colnames() %>% 
+  as.data.frame() %>% 
+  rename(
+    "variable" = "."
+  ) %>% 
+  mutate(
+    description = case_when(
+      variable=="p_b" ~ "Percent Black",
+      variable=="p_h" ~ "Pecent Hispanic/Latin@",
+      variable=="p_wh" ~ "Percent white",
+      variable=="p_frl" ~ "Percent free/reduced lunch",
+      variable=="wb_nei" ~ "White/Black Normalized Exposure Index",
+      variable=="p_nt" ~ "Percent FTE's that are new teachers",
+      variable=="p_nogr" ~ "Percent of FTE's with no graduate degree",
+      variable=="p_exp15" ~ "Percent of FTE's with 1 to 5 years of experience",
+      variable=="p_me_m3" ~ "Percent of students that meet or exceed 3rd grade MCA math scores",
+      variable=="p_me_r3" ~ "Percent of students that meet or exceed 3rd grade MCA reading scores",
+      variable=="p_me_m7" ~ "Percent of students that meet or exceed 7th grade MCA math scores",
+      variable=="p_me_r7" ~ "Percent of students that meet or exceed 7th grade MCA reading scores",
+      variable=="p_me_m11" ~ "Percent of students that meet or exceed 11th grade MCA math scores",
+      variable=="p_me_r10" ~ "Percent of students that meet or exceed 10th grade MCA reading scores",
+      variable=="p_4gr" ~ "Percent of students that graduate in four years??",
+      variable=="p_4dr" ~ "Percent of students that drop out after four years??",
+      TRUE ~ variable
+    ),
+    source = case_when(
+      variable=="p_b" ~ "NCES",
+      variable=="p_h" ~ "NCES",
+      variable=="p_wh" ~ "NCES",
+      variable=="p_frl" ~ "NCES",
+      variable=="wb_nei" ~ "Stanford Education Opportunity",
+      variable=="p_nt" ~ "PELSB",
+      variable=="p_nogr" ~ "PELSB",
+      variable=="p_exp15" ~ "PELSB",
+      variable=="p_me_m3" ~ "MDE",
+      variable=="p_me_r3" ~ "MDE",
+      variable=="p_me_m7" ~ "MDE",
+      variable=="p_me_r7" ~ "MDE",
+      variable=="p_me_m11" ~ "MDE",
+      variable=="p_me_r10" ~ "MDE",
+      variable=="p_4gr" ~ "MDE",
+      variable=="p_4dr" ~ "MDE",
+      TRUE ~ variable
+    )
+  ) %>% 
+  gt() %>% 
+  tab_header(
+    title = "Variable List and Source for Ecological Analysis, 2001-2022",
+    subtitle = ""
+  ) %>%
+  opt_align_table_header(align = "center") %>%
+  cols_align(
+    align = c("center"),
+    columns = everything()
+  ) %>%
+  cols_label(
+    variable = "Variable",
+    description = "Description",
+    source = "Data Source",
+  ) %>%
+  tab_style(locations = cells_title("title"),
+            style = cell_text(weight = 700)) %>%
+  tab_style(locations = cells_title("subtitle"),
+            style = cell_text(weight = 500)) %>%
+  tab_style(style = list(cell_borders(sides = "top", color = "black", weight = px(0)), cell_text(transform = "uppercase", v_align = "bottom", size = px(14), weight = 500)),
+            locations = gt::cells_column_labels(columns = gt::everything())) %>%
+  tab_style(style = list(cell_text(transform = "uppercase", v_align = "bottom")),
+            locations = gt::cells_body(columns = gt::everything())) %>%
+  tab_style(style = cell_borders(sides = "bottom",
+                                 color = "black",
+                                 weight = px(1)),
+            locations = cells_row_groups()) %>%
+  tab_options(column_labels.background.color = "white",
+              data_row.padding = px(3),
+              heading.border.bottom.style = "none",
+              table.border.top.width = px(3),
+              table.border.top.style = "none",
+              table.border.bottom.style = "none",
+              column_labels.font.weight = "normal",
+              column_labels.border.top.style = "none",
+              column_labels.border.bottom.width = px(2),
+              column_labels.border.bottom.color = "black",
+              row_group.border.top.style = "none",
+              row_group.border.top.color = "black",
+              row_group.border.bottom.width = px(1),
+              row_group.border.bottom.color = "white",
+              stub.border.color = "white",
+              stub.border.width = px(0),
+              source_notes.font.size = 12,
+              source_notes.border.lr.style = "none",
+              table.font.size = 12)
+  
+```
+
+# Distributions of Ecological Variables
+The figures below are show the distribution of the variables used in the correlation matrices. Most of the annual distributions are similar and thus we only present the distributions for one year. They are stratified by level of school as not every variable is applicable to all levels (i.e. 3rd grade MCA scores only apply to elementary/primary schools). Only schools across the Twin Cities metro with at least 50 students are represented.
+
+
+```{r distributions}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+
+corrs %>% 
+  filter(
+    member>=50, 
+    year==2018,
+    leaname.x %in% metro.districts2,
+    level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  select(
+    level,
+    # ADMIN
+    perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
+    # PESLB
+    perc_nt, perc_exp15, perc_nograd, 
+    # GRADUATION
+    perc_four_grad, perc_four_drop,
+    # MCA
+    m3_perc_me, r3_perc_me, m7_perc_me, r7_perc_me, m11_perc_me, r10_perc_me) %>% 
+  rename(
+    "p_b" = "perblack",
+    "p_h" = "perhisp",
+    "p_wh" = "perwhite",
+    "p_frl" = "perfrlunch",
+    "wb_nei" = "ns_wht_blk",
+    "p_nt" = "perc_nt",
+    "p_nogr" = "perc_nograd",
+    "p_me_m3" = "m3_perc_me",
+    "p_me_r3" = "r3_perc_me",
+    "p_me_m7" = "m7_perc_me",
+    "p_me_r7" = "r7_perc_me",
+    "p_me_m11" = "m11_perc_me",
+    "p_me_r10" = "r10_perc_me",
+    "p_exp15" = "perc_exp15",
+    "p_4gr" = "perc_four_grad",
+    "p_4dr" = "perc_four_drop",
+  ) %>% 
+  pivot_longer(-level, names_to = "type", values_to = "value") %>% 
+  ggplot() +
+  aes(x = value, fill = level) +
+  geom_histogram(alpha = 0.7) +
+  scale_fill_manual(values = c("#264653", "#c1121f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000")) +
+  facet_wrap(~type) +
+  labs(
+    # Main title label
+    title = "Distribution of Ecological Variables for Twin Cities Metro Schools, 2018",
+    # Subtitle label
+    subtitle = paste0("Stratified by <b style='color:#264653'>Elementary</b>, <b style='color:#e9c46a'>Middle</b>, and <b style='color:#c1121f'>High</b> Schools"),
+    # X-axis label
+    x = "",
+    # Y-axis label
+    y = "",
+    # Caption label
+    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "none",
+    legend.title = element_text(
+      family = "",
+      face = "bold",
+      size = 8,
+      color = "black"
+    ),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 12,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 16,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0,
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+```
+
+# Cross-Sectional Correlation Matrices
+
+## Elementary Schools
 
 :::{.callout-note}
 The correlation matrix below shows elementary schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.
@@ -417,38 +972,38 @@ The correlation matrix below shows elementary schools in the Twin Cities metro a
 # 
 # PerformanceAnalytics::chart.Correlation(el.21, histogram=TRUE, pch=19)
 
-elem.03 <- elem %>% 
-  filter(year==2003) %>% 
-  select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>% 
-  rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
-    "p_wh" = "perwhite",
-    "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_me_m3" = "m3_perc_me",
-    "p_me_r3" = "r3_perc_me",
-  ) %>% 
-  cor(use = "complete.obs") %>% 
-  reorder_cormat()
-
-elem.11 <- elem %>% 
-  filter(year==2011) %>% 
-  select(-year) %>% 
-  rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
-    "p_wh" = "perwhite",
-    "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
-    "p_me_m3" = "m3_perc_me",
-    "p_me_r3" = "r3_perc_me",
-    "p_exp15" = "perc_exp15"
-  ) %>% 
-  cor(use = "complete.obs") %>% 
-  reorder_cormat()
+# elem.03 <- elem %>% 
+#   filter(year==2003) %>% 
+#   select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>% 
+#   rename(
+#     "p_b" = "perblack",
+#     "p_h" = "perhisp",
+#     "p_wh" = "perwhite",
+#     "p_frl" = "perfrlunch",
+#     "wb_nei" = "ns_wht_blk",
+#     "p_me_m3" = "m3_perc_me",
+#     "p_me_r3" = "r3_perc_me",
+#   ) %>% 
+#   cor(use = "complete.obs") %>% 
+#   reorder_cormat()
+# 
+# elem.11 <- elem %>% 
+#   filter(year==2011) %>% 
+#   select(-year) %>% 
+#   rename(
+#     "p_b" = "perblack",
+#     "p_h" = "perhisp",
+#     "p_wh" = "perwhite",
+#     "p_frl" = "perfrlunch",
+#     "wb_nei" = "ns_wht_blk",
+#     "p_nt" = "perc_nt",
+#     "p_nogr" = "perc_nograd",
+#     "p_me_m3" = "m3_perc_me",
+#     "p_me_r3" = "r3_perc_me",
+#     "p_exp15" = "perc_exp15"
+#   ) %>% 
+#   cor(use = "complete.obs") %>% 
+#   reorder_cormat()
 
 elem.21 <- elem %>% 
   filter(year==2021) %>% 
@@ -476,133 +1031,132 @@ elem.21 <- elem %>%
 #| fig-width: 12
 #| fig-height: 8
 
-elem.03 %>% 
-  get_upper_tri() %>% 
-  melt(na.rm = T) %>% 
-  ggplot() +
-  aes(x = Var2, y = Var1, fill = value) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(
-    low = "#D43E4F",
-    mid = "#FDF7BE",
-    high = "#3288BE", 
-    midpoint = 0, 
-    limit = c(-1,1), 
-    name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
-  labs(
-    # Main title label
-    title = "Correlations Across Metro Elementary Schools, 2003",
-    # Subtitle label
-    subtitle = paste0(""),
-    # X-axis label
-    x = "",
-    # Y-axis label
-    y = "",
-    # Caption label
-    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
-    # Legend titles
-  ) +
-  theme(
-    # Legend location, formatting, and background
-    legend.position = "right",
-    legend.title = element_text(
-      family = "",
-      face = "bold",
-      size = 8,
-      color = "black"
-    ),
-    # Legend background fill and outline (color)
-    legend.background = element_blank(),
-    # 
-    legend.box.background = element_blank(),
-    # Legend box for shapes
-    legend.key = element_blank(),
-    # Overall text formatting
-    text = element_text(
-      family = "",
-      face = "bold",
-      size = 12,
-      color = "black"
-    ),
-    # Plot title formatting (margin t=top, b=bottom)
-    plot.title = element_markdown(
-      lineheight = 1.1,
-      family = "",
-      size = 16,
-      face = "bold",
-      hjust = 0.5,
-      color = "black",
-      margin = margin(
-        t = 0.5, 
-        unit = "cm")
-    ),
-    # Plot subtitle formatting
-    plot.subtitle = element_markdown(
-      family = "",
-      size = 14,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Adjust facet labels
-    strip.text = element_markdown(
-      family = "",
-      size = 10,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Plot caption formatting
-    plot.caption = element_text(
-      family = "",
-      size = 10,
-      face = "plain",
-      color = "black"
-    ),
-    # Axes text angle and formatting
-    axis.text.x = element_text(
-      angle = 45,
-      vjust = 1,
-      hjust = 1,
-      face = "bold"
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      face = "bold"
-    ),
-    # Overall (x and y) axes ticks formatting
-    axis.ticks = element_blank(),
-    # Overall (x and y) axes lines formatting
-    axis.line = element_line(
-      color = "#b4aea9"
-    ),
-    # Panel grid formatting
-    panel.grid = element_line(
-      color = "grey95"
-    ),
-    # Minor overall (x and y) panel grid formatting
-    panel.grid.minor = element_blank(
-      
-    ),
-    # Major overall (x and y) panel grid formatting
-    panel.grid.major = element_line(
-      linetype = "solid"
-    ),
-    # Panel background (what is inside axes)
-    panel.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    ),
-    # Plot background (what is outside axes)
-    plot.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    )
-  ) +
-  guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
-  coord_fixed()
+# elem.03 %>% 
+#   melt(na.rm = T) %>% 
+#   ggplot() +
+#   aes(x = Var2, y = Var1, fill = value) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(
+#     low = "#D43E4F",
+#     mid = "#FDF7BE",
+#     high = "#3288BE", 
+#     midpoint = 0, 
+#     limit = c(-1,1), 
+#     name = "Pearson\nCorrelation") +
+#   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+#   labs(
+#     # Main title label
+#     title = "Correlations Across Metro Elementary Schools, 2003",
+#     # Subtitle label
+#     subtitle = paste0(""),
+#     # X-axis label
+#     x = "",
+#     # Y-axis label
+#     y = "",
+#     # Caption label
+#     caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+#     # Legend titles
+#   ) +
+#   theme(
+#     # Legend location, formatting, and background
+#     legend.position = "right",
+#     legend.title = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 8,
+#       color = "black"
+#     ),
+#     # Legend background fill and outline (color)
+#     legend.background = element_blank(),
+#     # 
+#     legend.box.background = element_blank(),
+#     # Legend box for shapes
+#     legend.key = element_blank(),
+#     # Overall text formatting
+#     text = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 12,
+#       color = "black"
+#     ),
+#     # Plot title formatting (margin t=top, b=bottom)
+#     plot.title = element_markdown(
+#       lineheight = 1.1,
+#       family = "",
+#       size = 16,
+#       face = "bold",
+#       hjust = 0.5,
+#       color = "black",
+#       margin = margin(
+#         t = 0.5, 
+#         unit = "cm")
+#     ),
+#     # Plot subtitle formatting
+#     plot.subtitle = element_markdown(
+#       family = "",
+#       size = 14,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Adjust facet labels
+#     strip.text = element_markdown(
+#       family = "",
+#       size = 10,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Plot caption formatting
+#     plot.caption = element_text(
+#       family = "",
+#       size = 10,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Axes text angle and formatting
+#     axis.text.x = element_text(
+#       angle = 45,
+#       vjust = 1,
+#       hjust = 1,
+#       face = "bold"
+#     ),
+#     axis.text.y = element_text(
+#       angle = 0, 
+#       face = "bold"
+#     ),
+#     # Overall (x and y) axes ticks formatting
+#     axis.ticks = element_blank(),
+#     # Overall (x and y) axes lines formatting
+#     axis.line = element_line(
+#       color = "#b4aea9"
+#     ),
+#     # Panel grid formatting
+#     panel.grid = element_line(
+#       color = "grey95"
+#     ),
+#     # Minor overall (x and y) panel grid formatting
+#     panel.grid.minor = element_blank(
+#       
+#     ),
+#     # Major overall (x and y) panel grid formatting
+#     panel.grid.major = element_line(
+#       linetype = "solid"
+#     ),
+#     # Panel background (what is inside axes)
+#     panel.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     ),
+#     # Plot background (what is outside axes)
+#     plot.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     )
+#   ) +
+#   guides(fill = guide_colourbar(barwidth = 0.5,
+#                                 barheight = 10)) +
+#   coord_fixed()
 
 ```
 
@@ -611,133 +1165,132 @@ elem.03 %>%
 #| fig-width: 12
 #| fig-height: 8
 
-elem.11 %>% 
-  get_upper_tri() %>% 
-  melt(na.rm = T) %>% 
-  ggplot() +
-  aes(x = Var2, y = Var1, fill = value) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(
-    low = "#D43E4F",
-    mid = "#FDF7BE",
-    high = "#3288BE",
-    midpoint = 0, 
-    limit = c(-1,1), 
-    name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
-  labs(
-    # Main title label
-    title = "Correlations Across Metro Elementary Schools, 2011",
-    # Subtitle label
-    subtitle = paste0(""),
-    # X-axis label
-    x = "",
-    # Y-axis label
-    y = "",
-    # Caption label
-    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
-    # Legend titles
-  ) +
-  theme(
-    # Legend location, formatting, and background
-    legend.position = "right",
-    legend.title = element_text(
-      family = "",
-      face = "bold",
-      size = 8,
-      color = "black"
-    ),
-    # Legend background fill and outline (color)
-    legend.background = element_blank(),
-    # 
-    legend.box.background = element_blank(),
-    # Legend box for shapes
-    legend.key = element_blank(),
-    # Overall text formatting
-    text = element_text(
-      family = "",
-      face = "bold",
-      size = 12,
-      color = "black"
-    ),
-    # Plot title formatting (margin t=top, b=bottom)
-    plot.title = element_markdown(
-      lineheight = 1.1,
-      family = "",
-      size = 16,
-      face = "bold",
-      hjust = 0.5,
-      color = "black",
-      margin = margin(
-        t = 0.5, 
-        unit = "cm")
-    ),
-    # Plot subtitle formatting
-    plot.subtitle = element_markdown(
-      family = "",
-      size = 14,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Adjust facet labels
-    strip.text = element_markdown(
-      family = "",
-      size = 10,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Plot caption formatting
-    plot.caption = element_text(
-      family = "",
-      size = 10,
-      face = "plain",
-      color = "black"
-    ),
-    # Axes text angle and formatting
-    axis.text.x = element_text(
-      angle = 45,
-      vjust = 1,
-      hjust = 1,
-      face = "bold"
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      face = "bold"
-    ),
-    # Overall (x and y) axes ticks formatting
-    axis.ticks = element_blank(),
-    # Overall (x and y) axes lines formatting
-    axis.line = element_line(
-      color = "#b4aea9"
-    ),
-    # Panel grid formatting
-    panel.grid = element_line(
-      color = "grey95"
-    ),
-    # Minor overall (x and y) panel grid formatting
-    panel.grid.minor = element_blank(
-      
-    ),
-    # Major overall (x and y) panel grid formatting
-    panel.grid.major = element_line(
-      linetype = "solid"
-    ),
-    # Panel background (what is inside axes)
-    panel.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    ),
-    # Plot background (what is outside axes)
-    plot.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    )
-  ) +
-  guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
-  coord_fixed()
+# elem.11 %>% 
+#   melt(na.rm = T) %>% 
+#   ggplot() +
+#   aes(x = Var2, y = Var1, fill = value) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(
+#     low = "#D43E4F",
+#     mid = "#FDF7BE",
+#     high = "#3288BE",
+#     midpoint = 0, 
+#     limit = c(-1,1), 
+#     name = "Pearson\nCorrelation") +
+#   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+#   labs(
+#     # Main title label
+#     title = "Correlations Across Metro Elementary Schools, 2011",
+#     # Subtitle label
+#     subtitle = paste0(""),
+#     # X-axis label
+#     x = "",
+#     # Y-axis label
+#     y = "",
+#     # Caption label
+#     caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+#     # Legend titles
+#   ) +
+#   theme(
+#     # Legend location, formatting, and background
+#     legend.position = "right",
+#     legend.title = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 8,
+#       color = "black"
+#     ),
+#     # Legend background fill and outline (color)
+#     legend.background = element_blank(),
+#     # 
+#     legend.box.background = element_blank(),
+#     # Legend box for shapes
+#     legend.key = element_blank(),
+#     # Overall text formatting
+#     text = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 12,
+#       color = "black"
+#     ),
+#     # Plot title formatting (margin t=top, b=bottom)
+#     plot.title = element_markdown(
+#       lineheight = 1.1,
+#       family = "",
+#       size = 16,
+#       face = "bold",
+#       hjust = 0.5,
+#       color = "black",
+#       margin = margin(
+#         t = 0.5, 
+#         unit = "cm")
+#     ),
+#     # Plot subtitle formatting
+#     plot.subtitle = element_markdown(
+#       family = "",
+#       size = 14,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Adjust facet labels
+#     strip.text = element_markdown(
+#       family = "",
+#       size = 10,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Plot caption formatting
+#     plot.caption = element_text(
+#       family = "",
+#       size = 10,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Axes text angle and formatting
+#     axis.text.x = element_text(
+#       angle = 45,
+#       vjust = 1,
+#       hjust = 1,
+#       face = "bold"
+#     ),
+#     axis.text.y = element_text(
+#       angle = 0, 
+#       face = "bold"
+#     ),
+#     # Overall (x and y) axes ticks formatting
+#     axis.ticks = element_blank(),
+#     # Overall (x and y) axes lines formatting
+#     axis.line = element_line(
+#       color = "#b4aea9"
+#     ),
+#     # Panel grid formatting
+#     panel.grid = element_line(
+#       color = "grey95"
+#     ),
+#     # Minor overall (x and y) panel grid formatting
+#     panel.grid.minor = element_blank(
+#       
+#     ),
+#     # Major overall (x and y) panel grid formatting
+#     panel.grid.major = element_line(
+#       linetype = "solid"
+#     ),
+#     # Panel background (what is inside axes)
+#     panel.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     ),
+#     # Plot background (what is outside axes)
+#     plot.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     )
+#   ) +
+#   guides(fill = guide_colourbar(barwidth = 0.5,
+#                                 barheight = 10)) +
+#   coord_fixed()
 
 ```
 
@@ -748,7 +1301,6 @@ elem.11 %>%
 #| fig-height: 8
 
 elem.21 %>% 
-  get_upper_tri() %>% 
   melt(na.rm = T) %>% 
   ggplot() +
   aes(x = Var2, y = Var1, fill = value) +
@@ -878,8 +1430,13 @@ elem.21 %>%
 
 ```
 
+See @tbl-vars for the list of variables.
 
-## Metro Middle Schools
+We can also look at @fig-elemtim to see the trends over time.
+
+
+
+## Middle Schools
 
 :::{.callout-note}
 The correlation matrix below shows middle schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years. 
@@ -906,38 +1463,38 @@ The correlation matrix below shows middle schools in the Twin Cities metro area 
 # 
 # PerformanceAnalytics::chart.Correlation(el.21, histogram=TRUE, pch=19)
 
-middl.03 <- middl %>% 
-  filter(year==2003) %>% 
-  select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>% 
-  rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
-    "p_wh" = "perwhite",
-    "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_me_m7" = "m7_perc_me",
-    "p_me_r7" = "r7_perc_me",
-  ) %>% 
-  cor(use = "complete.obs") %>% 
-  reorder_cormat()
-
-middl.11 <- middl %>% 
-  filter(year==2011) %>% 
-  select(-year) %>% 
-  rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
-    "p_wh" = "perwhite",
-    "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
-    "p_me_m7" = "m7_perc_me",
-    "p_me_r7" = "r7_perc_me",
-    "p_exp15" = "perc_exp15"
-  ) %>% 
-  cor(use = "complete.obs") %>% 
-  reorder_cormat()
+# middl.03 <- middl %>% 
+#   filter(year==2003) %>% 
+#   select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>% 
+#   rename(
+#     "p_b" = "perblack",
+#     "p_h" = "perhisp",
+#     "p_wh" = "perwhite",
+#     "p_frl" = "perfrlunch",
+#     "wb_nei" = "ns_wht_blk",
+#     "p_me_m7" = "m7_perc_me",
+#     "p_me_r7" = "r7_perc_me",
+#   ) %>% 
+#   cor(use = "complete.obs") %>% 
+#   reorder_cormat()
+# 
+# middl.11 <- middl %>% 
+#   filter(year==2011) %>% 
+#   select(-year) %>% 
+#   rename(
+#     "p_b" = "perblack",
+#     "p_h" = "perhisp",
+#     "p_wh" = "perwhite",
+#     "p_frl" = "perfrlunch",
+#     "wb_nei" = "ns_wht_blk",
+#     "p_nt" = "perc_nt",
+#     "p_nogr" = "perc_nograd",
+#     "p_me_m7" = "m7_perc_me",
+#     "p_me_r7" = "r7_perc_me",
+#     "p_exp15" = "perc_exp15"
+#   ) %>% 
+#   cor(use = "complete.obs") %>% 
+#   reorder_cormat()
 
 middl.21 <- middl %>% 
   filter(year==2021) %>% 
@@ -965,133 +1522,132 @@ middl.21 <- middl %>%
 #| fig-width: 12
 #| fig-height: 8
 
-middl.03 %>% 
-  get_upper_tri() %>% 
-  melt(na.rm = T) %>% 
-  ggplot() +
-  aes(x = Var2, y = Var1, fill = value) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(
-    low = "#D43E4F",
-    mid = "#FDF7BE",
-    high = "#3288BE",
-    midpoint = 0, 
-    limit = c(-1,1), 
-    name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
-  labs(
-    # Main title label
-    title = "Correlations Across Metro Middle Schools, 2003",
-    # Subtitle label
-    subtitle = paste0(""),
-    # X-axis label
-    x = "",
-    # Y-axis label
-    y = "",
-    # Caption label
-    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
-    # Legend titles
-  ) +
-  theme(
-    # Legend location, formatting, and background
-    legend.position = "right",
-    legend.title = element_text(
-      family = "",
-      face = "bold",
-      size = 8,
-      color = "black"
-    ),
-    # Legend background fill and outline (color)
-    legend.background = element_blank(),
-    # 
-    legend.box.background = element_blank(),
-    # Legend box for shapes
-    legend.key = element_blank(),
-    # Overall text formatting
-    text = element_text(
-      family = "",
-      face = "bold",
-      size = 12,
-      color = "black"
-    ),
-    # Plot title formatting (margin t=top, b=bottom)
-    plot.title = element_markdown(
-      lineheight = 1.1,
-      family = "",
-      size = 16,
-      face = "bold",
-      hjust = 0.5,
-      color = "black",
-      margin = margin(
-        t = 0.5, 
-        unit = "cm")
-    ),
-    # Plot subtitle formatting
-    plot.subtitle = element_markdown(
-      family = "",
-      size = 14,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Adjust facet labels
-    strip.text = element_markdown(
-      family = "",
-      size = 10,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Plot caption formatting
-    plot.caption = element_text(
-      family = "",
-      size = 10,
-      face = "plain",
-      color = "black"
-    ),
-    # Axes text angle and formatting
-    axis.text.x = element_text(
-      angle = 45,
-      vjust = 1,
-      hjust = 1,
-      face = "bold"
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      face = "bold"
-    ),
-    # Overall (x and y) axes ticks formatting
-    axis.ticks = element_blank(),
-    # Overall (x and y) axes lines formatting
-    axis.line = element_line(
-      color = "#b4aea9"
-    ),
-    # Panel grid formatting
-    panel.grid = element_line(
-      color = "grey95"
-    ),
-    # Minor overall (x and y) panel grid formatting
-    panel.grid.minor = element_blank(
-      
-    ),
-    # Major overall (x and y) panel grid formatting
-    panel.grid.major = element_line(
-      linetype = "solid"
-    ),
-    # Panel background (what is inside axes)
-    panel.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    ),
-    # Plot background (what is outside axes)
-    plot.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    )
-  ) +
-  guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
-  coord_fixed()
+# middl.03 %>% 
+#   melt(na.rm = T) %>% 
+#   ggplot() +
+#   aes(x = Var2, y = Var1, fill = value) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(
+#     low = "#D43E4F",
+#     mid = "#FDF7BE",
+#     high = "#3288BE",
+#     midpoint = 0, 
+#     limit = c(-1,1), 
+#     name = "Pearson\nCorrelation") +
+#   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+#   labs(
+#     # Main title label
+#     title = "Correlations Across Metro Middle Schools, 2003",
+#     # Subtitle label
+#     subtitle = paste0(""),
+#     # X-axis label
+#     x = "",
+#     # Y-axis label
+#     y = "",
+#     # Caption label
+#     caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+#     # Legend titles
+#   ) +
+#   theme(
+#     # Legend location, formatting, and background
+#     legend.position = "right",
+#     legend.title = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 8,
+#       color = "black"
+#     ),
+#     # Legend background fill and outline (color)
+#     legend.background = element_blank(),
+#     # 
+#     legend.box.background = element_blank(),
+#     # Legend box for shapes
+#     legend.key = element_blank(),
+#     # Overall text formatting
+#     text = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 12,
+#       color = "black"
+#     ),
+#     # Plot title formatting (margin t=top, b=bottom)
+#     plot.title = element_markdown(
+#       lineheight = 1.1,
+#       family = "",
+#       size = 16,
+#       face = "bold",
+#       hjust = 0.5,
+#       color = "black",
+#       margin = margin(
+#         t = 0.5, 
+#         unit = "cm")
+#     ),
+#     # Plot subtitle formatting
+#     plot.subtitle = element_markdown(
+#       family = "",
+#       size = 14,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Adjust facet labels
+#     strip.text = element_markdown(
+#       family = "",
+#       size = 10,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Plot caption formatting
+#     plot.caption = element_text(
+#       family = "",
+#       size = 10,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Axes text angle and formatting
+#     axis.text.x = element_text(
+#       angle = 45,
+#       vjust = 1,
+#       hjust = 1,
+#       face = "bold"
+#     ),
+#     axis.text.y = element_text(
+#       angle = 0, 
+#       face = "bold"
+#     ),
+#     # Overall (x and y) axes ticks formatting
+#     axis.ticks = element_blank(),
+#     # Overall (x and y) axes lines formatting
+#     axis.line = element_line(
+#       color = "#b4aea9"
+#     ),
+#     # Panel grid formatting
+#     panel.grid = element_line(
+#       color = "grey95"
+#     ),
+#     # Minor overall (x and y) panel grid formatting
+#     panel.grid.minor = element_blank(
+#       
+#     ),
+#     # Major overall (x and y) panel grid formatting
+#     panel.grid.major = element_line(
+#       linetype = "solid"
+#     ),
+#     # Panel background (what is inside axes)
+#     panel.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     ),
+#     # Plot background (what is outside axes)
+#     plot.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     )
+#   ) +
+#   guides(fill = guide_colourbar(barwidth = 0.5,
+#                                 barheight = 10)) +
+#   coord_fixed()
 
 ```
 
@@ -1100,133 +1656,132 @@ middl.03 %>%
 #| fig-width: 12
 #| fig-height: 8
 
-middl.11 %>% 
-  get_upper_tri() %>% 
-  melt(na.rm = T) %>% 
-  ggplot() +
-  aes(x = Var2, y = Var1, fill = value) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(
-    low = "#D43E4F",
-    mid = "#FDF7BE",
-    high = "#3288BE",
-    midpoint = 0, 
-    limit = c(-1,1), 
-    name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
-  labs(
-    # Main title label
-    title = "Correlations Across Metro Middle Schools, 2011",
-    # Subtitle label
-    subtitle = paste0(""),
-    # X-axis label
-    x = "",
-    # Y-axis label
-    y = "",
-    # Caption label
-    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
-    # Legend titles
-  ) +
-  theme(
-    # Legend location, formatting, and background
-    legend.position = "right",
-    legend.title = element_text(
-      family = "",
-      face = "bold",
-      size = 8,
-      color = "black"
-    ),
-    # Legend background fill and outline (color)
-    legend.background = element_blank(),
-    # 
-    legend.box.background = element_blank(),
-    # Legend box for shapes
-    legend.key = element_blank(),
-    # Overall text formatting
-    text = element_text(
-      family = "",
-      face = "bold",
-      size = 12,
-      color = "black"
-    ),
-    # Plot title formatting (margin t=top, b=bottom)
-    plot.title = element_markdown(
-      lineheight = 1.1,
-      family = "",
-      size = 16,
-      face = "bold",
-      hjust = 0.5,
-      color = "black",
-      margin = margin(
-        t = 0.5, 
-        unit = "cm")
-    ),
-    # Plot subtitle formatting
-    plot.subtitle = element_markdown(
-      family = "",
-      size = 14,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Adjust facet labels
-    strip.text = element_markdown(
-      family = "",
-      size = 10,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Plot caption formatting
-    plot.caption = element_text(
-      family = "",
-      size = 10,
-      face = "plain",
-      color = "black"
-    ),
-    # Axes text angle and formatting
-    axis.text.x = element_text(
-      angle = 45,
-      vjust = 1,
-      hjust = 1,
-      face = "bold"
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      face = "bold"
-    ),
-    # Overall (x and y) axes ticks formatting
-    axis.ticks = element_blank(),
-    # Overall (x and y) axes lines formatting
-    axis.line = element_line(
-      color = "#b4aea9"
-    ),
-    # Panel grid formatting
-    panel.grid = element_line(
-      color = "grey95"
-    ),
-    # Minor overall (x and y) panel grid formatting
-    panel.grid.minor = element_blank(
-      
-    ),
-    # Major overall (x and y) panel grid formatting
-    panel.grid.major = element_line(
-      linetype = "solid"
-    ),
-    # Panel background (what is inside axes)
-    panel.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    ),
-    # Plot background (what is outside axes)
-    plot.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    )
-  ) +
-  guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
-  coord_fixed()
+# middl.11 %>% 
+#   melt(na.rm = T) %>% 
+#   ggplot() +
+#   aes(x = Var2, y = Var1, fill = value) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(
+#     low = "#D43E4F",
+#     mid = "#FDF7BE",
+#     high = "#3288BE",
+#     midpoint = 0, 
+#     limit = c(-1,1), 
+#     name = "Pearson\nCorrelation") +
+#   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+#   labs(
+#     # Main title label
+#     title = "Correlations Across Metro Middle Schools, 2011",
+#     # Subtitle label
+#     subtitle = paste0(""),
+#     # X-axis label
+#     x = "",
+#     # Y-axis label
+#     y = "",
+#     # Caption label
+#     caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+#     # Legend titles
+#   ) +
+#   theme(
+#     # Legend location, formatting, and background
+#     legend.position = "right",
+#     legend.title = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 8,
+#       color = "black"
+#     ),
+#     # Legend background fill and outline (color)
+#     legend.background = element_blank(),
+#     # 
+#     legend.box.background = element_blank(),
+#     # Legend box for shapes
+#     legend.key = element_blank(),
+#     # Overall text formatting
+#     text = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 12,
+#       color = "black"
+#     ),
+#     # Plot title formatting (margin t=top, b=bottom)
+#     plot.title = element_markdown(
+#       lineheight = 1.1,
+#       family = "",
+#       size = 16,
+#       face = "bold",
+#       hjust = 0.5,
+#       color = "black",
+#       margin = margin(
+#         t = 0.5, 
+#         unit = "cm")
+#     ),
+#     # Plot subtitle formatting
+#     plot.subtitle = element_markdown(
+#       family = "",
+#       size = 14,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Adjust facet labels
+#     strip.text = element_markdown(
+#       family = "",
+#       size = 10,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Plot caption formatting
+#     plot.caption = element_text(
+#       family = "",
+#       size = 10,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Axes text angle and formatting
+#     axis.text.x = element_text(
+#       angle = 45,
+#       vjust = 1,
+#       hjust = 1,
+#       face = "bold"
+#     ),
+#     axis.text.y = element_text(
+#       angle = 0, 
+#       face = "bold"
+#     ),
+#     # Overall (x and y) axes ticks formatting
+#     axis.ticks = element_blank(),
+#     # Overall (x and y) axes lines formatting
+#     axis.line = element_line(
+#       color = "#b4aea9"
+#     ),
+#     # Panel grid formatting
+#     panel.grid = element_line(
+#       color = "grey95"
+#     ),
+#     # Minor overall (x and y) panel grid formatting
+#     panel.grid.minor = element_blank(
+#       
+#     ),
+#     # Major overall (x and y) panel grid formatting
+#     panel.grid.major = element_line(
+#       linetype = "solid"
+#     ),
+#     # Panel background (what is inside axes)
+#     panel.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     ),
+#     # Plot background (what is outside axes)
+#     plot.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     )
+#   ) +
+#   guides(fill = guide_colourbar(barwidth = 0.5,
+#                                 barheight = 10)) +
+#   coord_fixed()
 
 ```
 
@@ -1237,7 +1792,6 @@ middl.11 %>%
 #| fig-height: 8
 
 middl.21 %>% 
-  get_upper_tri() %>% 
   melt(na.rm = T) %>% 
   ggplot() +
   aes(x = Var2, y = Var1, fill = value) +
@@ -1369,7 +1923,7 @@ middl.21 %>%
 ```
 
 
-## Metro High Schools
+## High Schools
 
 :::{.callout-note}
 The correlation matrix below shows high schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.
@@ -1392,46 +1946,46 @@ The correlation matrix below shows high schools in the Twin Cities metro area wi
 # 
 # PerformanceAnalytics::chart.Correlation(hs.11, histogram=TRUE, pch=19)
 
-# hs.21 <- high %>% 
-#   filter(year==2021) %>% 
+# hs.21 <- high %>%
+#   filter(year==2021) %>%
 #   select(-year)
 # 
 # PerformanceAnalytics::chart.Correlation(hs.21, histogram=TRUE, pch=19)
 
-high.03 <- high %>% 
-  filter(year==2003) %>% 
-  select(-year, -perc_nograd, -perc_nt, -perc_exp15, -perc_four_grad, -perc_four_drop) %>% 
-  rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
-    "p_wh" = "perwhite",
-    "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_me_m11" = "m11_perc_me",
-    "p_me_r10" = "r10_perc_me",
-  ) %>% 
-  cor(use = "complete.obs") %>% 
-  reorder_cormat()
-
-high.11 <- high %>% 
-  filter(year==2011) %>% 
-  select(-year) %>% 
-  rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
-    "p_wh" = "perwhite",
-    "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
-    "p_me_m11" = "m11_perc_me",
-    "p_me_r10" = "r10_perc_me",
-    "p_4gr" = "perc_four_grad",
-    "p_4dr" = "perc_four_drop",
-    "p_exp15" = "perc_exp15"
-  ) %>% 
-  cor(use = "complete.obs") %>% 
-  reorder_cormat()
+# high.03 <- high %>% 
+#   filter(year==2003) %>% 
+#   select(-year, -perc_nograd, -perc_nt, -perc_exp15, -perc_four_grad, -perc_four_drop) %>% 
+#   rename(
+#     "p_b" = "perblack",
+#     "p_h" = "perhisp",
+#     "p_wh" = "perwhite",
+#     "p_frl" = "perfrlunch",
+#     "wb_nei" = "ns_wht_blk",
+#     "p_me_m11" = "m11_perc_me",
+#     "p_me_r10" = "r10_perc_me",
+#   ) %>% 
+#   cor(use = "complete.obs") %>% 
+#   reorder_cormat()
+# 
+# high.11 <- high %>% 
+#   filter(year==2011) %>% 
+#   select(-year) %>% 
+#   rename(
+#     "p_b" = "perblack",
+#     "p_h" = "perhisp",
+#     "p_wh" = "perwhite",
+#     "p_frl" = "perfrlunch",
+#     "wb_nei" = "ns_wht_blk",
+#     "p_nt" = "perc_nt",
+#     "p_nogr" = "perc_nograd",
+#     "p_me_m11" = "m11_perc_me",
+#     "p_me_r10" = "r10_perc_me",
+#     "p_4gr" = "perc_four_grad",
+#     "p_4dr" = "perc_four_drop",
+#     "p_exp15" = "perc_exp15"
+#   ) %>% 
+#   cor(use = "complete.obs") %>% 
+#   reorder_cormat()
 
 high.21 <- high %>% 
   filter(year==2021) %>% 
@@ -1461,133 +2015,132 @@ high.21 <- high %>%
 #| fig-width: 12
 #| fig-height: 8
 
-high.03 %>% 
-  get_upper_tri() %>% 
-  melt(na.rm = T) %>% 
-  ggplot() +
-  aes(x = Var2, y = Var1, fill = value) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(
-    low = "#D43E4F",
-    mid = "#FDF7BE",
-    high = "#3288BE",
-    midpoint = 0, 
-    limit = c(-1,1), 
-    name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
-  labs(
-    # Main title label
-    title = "Correlations Across Metro High Schools, 2003",
-    # Subtitle label
-    subtitle = paste0(""),
-    # X-axis label
-    x = "",
-    # Y-axis label
-    y = "",
-    # Caption label
-    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
-    # Legend titles
-  ) +
-  theme(
-    # Legend location, formatting, and background
-    legend.position = "right",
-    legend.title = element_text(
-      family = "",
-      face = "bold",
-      size = 8,
-      color = "black"
-    ),
-    # Legend background fill and outline (color)
-    legend.background = element_blank(),
-    # 
-    legend.box.background = element_blank(),
-    # Legend box for shapes
-    legend.key = element_blank(),
-    # Overall text formatting
-    text = element_text(
-      family = "",
-      face = "bold",
-      size = 12,
-      color = "black"
-    ),
-    # Plot title formatting (margin t=top, b=bottom)
-    plot.title = element_markdown(
-      lineheight = 1.1,
-      family = "",
-      size = 16,
-      face = "bold",
-      hjust = 0.5,
-      color = "black",
-      margin = margin(
-        t = 0.5, 
-        unit = "cm")
-    ),
-    # Plot subtitle formatting
-    plot.subtitle = element_markdown(
-      family = "",
-      size = 14,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Adjust facet labels
-    strip.text = element_markdown(
-      family = "",
-      size = 10,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Plot caption formatting
-    plot.caption = element_text(
-      family = "",
-      size = 10,
-      face = "plain",
-      color = "black"
-    ),
-    # Axes text angle and formatting
-    axis.text.x = element_text(
-      angle = 45,
-      vjust = 1,
-      hjust = 1,
-      face = "bold"
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      face = "bold"
-    ),
-    # Overall (x and y) axes ticks formatting
-    axis.ticks = element_blank(),
-    # Overall (x and y) axes lines formatting
-    axis.line = element_line(
-      color = "#b4aea9"
-    ),
-    # Panel grid formatting
-    panel.grid = element_line(
-      color = "grey95"
-    ),
-    # Minor overall (x and y) panel grid formatting
-    panel.grid.minor = element_blank(
-      
-    ),
-    # Major overall (x and y) panel grid formatting
-    panel.grid.major = element_line(
-      linetype = "solid"
-    ),
-    # Panel background (what is inside axes)
-    panel.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    ),
-    # Plot background (what is outside axes)
-    plot.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    )
-  ) +
-  guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
-  coord_fixed()
+# high.03 %>% 
+#   melt(na.rm = T) %>% 
+#   ggplot() +
+#   aes(x = Var2, y = Var1, fill = value) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(
+#     low = "#D43E4F",
+#     mid = "#FDF7BE",
+#     high = "#3288BE",
+#     midpoint = 0, 
+#     limit = c(-1,1), 
+#     name = "Pearson\nCorrelation") +
+#   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+#   labs(
+#     # Main title label
+#     title = "Correlations Across Metro High Schools, 2003",
+#     # Subtitle label
+#     subtitle = paste0(""),
+#     # X-axis label
+#     x = "",
+#     # Y-axis label
+#     y = "",
+#     # Caption label
+#     caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+#     # Legend titles
+#   ) +
+#   theme(
+#     # Legend location, formatting, and background
+#     legend.position = "right",
+#     legend.title = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 8,
+#       color = "black"
+#     ),
+#     # Legend background fill and outline (color)
+#     legend.background = element_blank(),
+#     # 
+#     legend.box.background = element_blank(),
+#     # Legend box for shapes
+#     legend.key = element_blank(),
+#     # Overall text formatting
+#     text = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 12,
+#       color = "black"
+#     ),
+#     # Plot title formatting (margin t=top, b=bottom)
+#     plot.title = element_markdown(
+#       lineheight = 1.1,
+#       family = "",
+#       size = 16,
+#       face = "bold",
+#       hjust = 0.5,
+#       color = "black",
+#       margin = margin(
+#         t = 0.5, 
+#         unit = "cm")
+#     ),
+#     # Plot subtitle formatting
+#     plot.subtitle = element_markdown(
+#       family = "",
+#       size = 14,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Adjust facet labels
+#     strip.text = element_markdown(
+#       family = "",
+#       size = 10,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Plot caption formatting
+#     plot.caption = element_text(
+#       family = "",
+#       size = 10,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Axes text angle and formatting
+#     axis.text.x = element_text(
+#       angle = 45,
+#       vjust = 1,
+#       hjust = 1,
+#       face = "bold"
+#     ),
+#     axis.text.y = element_text(
+#       angle = 0, 
+#       face = "bold"
+#     ),
+#     # Overall (x and y) axes ticks formatting
+#     axis.ticks = element_blank(),
+#     # Overall (x and y) axes lines formatting
+#     axis.line = element_line(
+#       color = "#b4aea9"
+#     ),
+#     # Panel grid formatting
+#     panel.grid = element_line(
+#       color = "grey95"
+#     ),
+#     # Minor overall (x and y) panel grid formatting
+#     panel.grid.minor = element_blank(
+#       
+#     ),
+#     # Major overall (x and y) panel grid formatting
+#     panel.grid.major = element_line(
+#       linetype = "solid"
+#     ),
+#     # Panel background (what is inside axes)
+#     panel.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     ),
+#     # Plot background (what is outside axes)
+#     plot.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     )
+#   ) +
+#   guides(fill = guide_colourbar(barwidth = 0.5,
+#                                 barheight = 10)) +
+#   coord_fixed()
 
 ```
 
@@ -1596,133 +2149,132 @@ high.03 %>%
 #| fig-width: 12
 #| fig-height: 8
 
-high.11 %>% 
-  get_upper_tri() %>% 
-  melt(na.rm = T) %>% 
-  ggplot() +
-  aes(x = Var2, y = Var1, fill = value) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(
-    low = "#D43E4F",
-    mid = "#FDF7BE",
-    high = "#3288BE", 
-    midpoint = 0, 
-    limit = c(-1,1), 
-    name = "Pearson\nCorrelation") +
-  geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
-  labs(
-    # Main title label
-    title = "Correlations Across Metro High Schools, 2011",
-    # Subtitle label
-    subtitle = paste0(""),
-    # X-axis label
-    x = "",
-    # Y-axis label
-    y = "",
-    # Caption label
-    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
-    # Legend titles
-  ) +
-  theme(
-    # Legend location, formatting, and background
-    legend.position = "right",
-    legend.title = element_text(
-      family = "",
-      face = "bold",
-      size = 8,
-      color = "black"
-    ),
-    # Legend background fill and outline (color)
-    legend.background = element_blank(),
-    # 
-    legend.box.background = element_blank(),
-    # Legend box for shapes
-    legend.key = element_blank(),
-    # Overall text formatting
-    text = element_text(
-      family = "",
-      face = "bold",
-      size = 12,
-      color = "black"
-    ),
-    # Plot title formatting (margin t=top, b=bottom)
-    plot.title = element_markdown(
-      lineheight = 1.1,
-      family = "",
-      size = 16,
-      face = "bold",
-      hjust = 0.5,
-      color = "black",
-      margin = margin(
-        t = 0.5, 
-        unit = "cm")
-    ),
-    # Plot subtitle formatting
-    plot.subtitle = element_markdown(
-      family = "",
-      size = 14,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Adjust facet labels
-    strip.text = element_markdown(
-      family = "",
-      size = 10,
-      hjust = 0.5,
-      face = "plain",
-      color = "black"
-    ),
-    # Plot caption formatting
-    plot.caption = element_text(
-      family = "",
-      size = 10,
-      face = "plain",
-      color = "black"
-    ),
-    # Axes text angle and formatting
-    axis.text.x = element_text(
-      angle = 45,
-      vjust = 1,
-      hjust = 1,
-      face = "bold"
-    ),
-    axis.text.y = element_text(
-      angle = 0, 
-      face = "bold"
-    ),
-    # Overall (x and y) axes ticks formatting
-    axis.ticks = element_blank(),
-    # Overall (x and y) axes lines formatting
-    axis.line = element_line(
-      color = "#b4aea9"
-    ),
-    # Panel grid formatting
-    panel.grid = element_line(
-      color = "grey95"
-    ),
-    # Minor overall (x and y) panel grid formatting
-    panel.grid.minor = element_blank(
-      
-    ),
-    # Major overall (x and y) panel grid formatting
-    panel.grid.major = element_line(
-      linetype = "solid"
-    ),
-    # Panel background (what is inside axes)
-    panel.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    ),
-    # Plot background (what is outside axes)
-    plot.background = element_rect(
-      fill = "#ffffff", 
-      color = "#ffffff"
-    )
-  ) +
-  guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
-  coord_fixed()
+# high.11 %>% 
+#   melt(na.rm = T) %>% 
+#   ggplot() +
+#   aes(x = Var2, y = Var1, fill = value) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(
+#     low = "#D43E4F",
+#     mid = "#FDF7BE",
+#     high = "#3288BE", 
+#     midpoint = 0, 
+#     limit = c(-1,1), 
+#     name = "Pearson\nCorrelation") +
+#   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+#   labs(
+#     # Main title label
+#     title = "Correlations Across Metro High Schools, 2011",
+#     # Subtitle label
+#     subtitle = paste0(""),
+#     # X-axis label
+#     x = "",
+#     # Y-axis label
+#     y = "",
+#     # Caption label
+#     caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+#     # Legend titles
+#   ) +
+#   theme(
+#     # Legend location, formatting, and background
+#     legend.position = "right",
+#     legend.title = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 8,
+#       color = "black"
+#     ),
+#     # Legend background fill and outline (color)
+#     legend.background = element_blank(),
+#     # 
+#     legend.box.background = element_blank(),
+#     # Legend box for shapes
+#     legend.key = element_blank(),
+#     # Overall text formatting
+#     text = element_text(
+#       family = "",
+#       face = "bold",
+#       size = 12,
+#       color = "black"
+#     ),
+#     # Plot title formatting (margin t=top, b=bottom)
+#     plot.title = element_markdown(
+#       lineheight = 1.1,
+#       family = "",
+#       size = 16,
+#       face = "bold",
+#       hjust = 0.5,
+#       color = "black",
+#       margin = margin(
+#         t = 0.5, 
+#         unit = "cm")
+#     ),
+#     # Plot subtitle formatting
+#     plot.subtitle = element_markdown(
+#       family = "",
+#       size = 14,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Adjust facet labels
+#     strip.text = element_markdown(
+#       family = "",
+#       size = 10,
+#       hjust = 0.5,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Plot caption formatting
+#     plot.caption = element_text(
+#       family = "",
+#       size = 10,
+#       face = "plain",
+#       color = "black"
+#     ),
+#     # Axes text angle and formatting
+#     axis.text.x = element_text(
+#       angle = 45,
+#       vjust = 1,
+#       hjust = 1,
+#       face = "bold"
+#     ),
+#     axis.text.y = element_text(
+#       angle = 0, 
+#       face = "bold"
+#     ),
+#     # Overall (x and y) axes ticks formatting
+#     axis.ticks = element_blank(),
+#     # Overall (x and y) axes lines formatting
+#     axis.line = element_line(
+#       color = "#b4aea9"
+#     ),
+#     # Panel grid formatting
+#     panel.grid = element_line(
+#       color = "grey95"
+#     ),
+#     # Minor overall (x and y) panel grid formatting
+#     panel.grid.minor = element_blank(
+#       
+#     ),
+#     # Major overall (x and y) panel grid formatting
+#     panel.grid.major = element_line(
+#       linetype = "solid"
+#     ),
+#     # Panel background (what is inside axes)
+#     panel.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     ),
+#     # Plot background (what is outside axes)
+#     plot.background = element_rect(
+#       fill = "#ffffff", 
+#       color = "#ffffff"
+#     )
+#   ) +
+#   guides(fill = guide_colourbar(barwidth = 0.5,
+#                                 barheight = 10)) +
+#   coord_fixed()
 
 ```
 
@@ -1733,7 +2285,6 @@ high.11 %>%
 #| fig-height: 8
 
 high.21 %>% 
-  get_upper_tri() %>% 
   melt(na.rm = T) %>% 
   ggplot() +
   aes(x = Var2, y = Var1, fill = value) +
@@ -1857,19 +2408,415 @@ high.21 %>%
     )
   ) +
   guides(fill = guide_colourbar(barwidth = 0.5,
-                                barheight = 10)) +
+                                barheight = 13)) +
   coord_fixed()
+
+
+```
+
+# Correlations Over Time
+
+```{r corr_time_prep}
+#| echo: false
+
+elem_corrs <- elem_corrs_fun(elem, years = 2001:2021)
+middl_corrs <- middl_corrs_fun(middl, years = 2001:2021) 
+high_corrs <- high_corrs_fun(high, years = 2001:2021)
+
+
+```
+
+## Elementary Schools
+
+:::{.callout-note}
+The figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.
+:::
+
+```{r elem_corr_time_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+#| fig-cap: Correlations over time for TC Metro Elementary Schools, 2001-2022
+#| label: fig-elemtim
+
+elem_corrs %>% 
+  filter(Var1 %in% c("wb_nei", "p_b", "p_h")) %>% 
+  ggplot() +
+  aes(x = year, y = value, color = Var2) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~Var1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  labs(
+    # Main title label
+    title = "Correlations Between Variables, 2001-2021",
+    # Subtitle label
+    subtitle = paste0("Across Metro Elementary Schools"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Pearson Correlation Coefficient",
+    # Caption label
+    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 12,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 16,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0,
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(color = guide_legend(nrow = 2, byrow = TRUE))
+
+
+```
+## Middle Schools
+
+:::{.callout-note}
+The figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.
+:::
+
+```{r middl_corr_time_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+#| lable: fig-middltim
+#| fig-cap: Correlations over time for TC Metro Middle Schools, 2001-2022
+
+middl_corrs %>% 
+  filter(Var1 %in% c("wb_nei", "p_b", "p_h")) %>% 
+  ggplot() +
+  aes(x = year, y = value, color = Var2) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~Var1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  labs(
+    # Main title label
+    title = "Correlations Between Variables, 2001-2021",
+    # Subtitle label
+    subtitle = paste0("Across Metro Middle Schools"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Pearson Correlation Coefficient",
+    # Caption label
+    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 12,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 16,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0,
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(color = guide_legend(nrow = 2, byrow = TRUE))
+
+
+```
+
+## High Schools
+
+:::{.callout-note}
+The figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.
+:::
+
+```{r high_corr_time_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+#| label: fig-hightim
+#| fig-cap: Correlations over time for TC Metro High Schools, 2001-2022
+
+high_corrs %>% 
+  filter(Var1 %in% c("wb_nei", "p_b", "p_h")) %>% 
+  ggplot() +
+  aes(x = year, y = value, color = Var2) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~Var1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f", "#B93289FF", "#C86C7CFF")) +
+  labs(
+    # Main title label
+    title = "Correlations Between Variables, 2001-2021",
+    # Subtitle label
+    subtitle = paste0("Across Metro High Schools"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Pearson Correlation Coefficient",
+    # Caption label
+    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 12,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 16,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0,
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(color = guide_legend(nrow = 2, byrow = TRUE))
+
 
 
 ```
 
 
 
-# In 2022, the typical (measured as a mean) Black child goes to a school that has X% free reduced lunch, and Y years of average teacher experience. In contrast, the typical white child goes to a school that has X% free reduced lunch, and Y years of average teacher experience.
+In 2022, the typical (measured as a mean) Black child goes to a school that has X% free reduced lunch, and Y years of average teacher experience. In contrast, the typical white child goes to a school that has X% free reduced lunch, and Y years of average teacher experience.
 
 How do you conceptualize "typical"? Did you just take the population weighted mean?
 
-## Do more segregated schools have teachers with less experience or education?
+Do more segregated schools have teachers with less experience or education?
 
 ```{r}
 
@@ -1877,6 +2824,6 @@ How do you conceptualize "typical"? Did you just take the population weighted me
 
 ```
 
-# MCA/Testing
+MCA/Testing
 
 
