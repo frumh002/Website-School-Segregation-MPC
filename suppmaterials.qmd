@@ -6,6 +6,7 @@ date: "`r Sys.Date()`"
 format:
   html:
     embed-resources: true
+    cap-location: bottom
 toc: true
 execute:
   warning: false

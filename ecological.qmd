@@ -6,6 +6,7 @@ date: "`r Sys.Date()`"
 format:
   html:
     embed-resources: true
+    cap-location: bottom
 toc: true
 execute:
   warning: false
@@ -654,10 +655,10 @@ high <- corrs %>%
 # Ecological Data Variables
 The reference table below will serve as the list of variables for the figures represented in correlation analysis. Please reference this table as needed to identify variables across those figures. 
 
-```{r}
+```{r vars_table}
 #| echo: false
-#| tbl-cap: tbl-vars
-#| label: Variable list for correlation matrices
+#| label: fig-vars
+#| fig-cap: Variable list for correlation matrices
 
 corrs %>% 
   select(
@@ -1430,11 +1431,9 @@ elem.21 %>%
 
 ```
 
-See @tbl-vars for the list of variables.
+See @fig-vars for the list of variables.
 
 We can also look at @fig-elemtim to see the trends over time.
-
-
 
 ## Middle Schools
 
@@ -1922,6 +1921,9 @@ middl.21 %>%
 
 ```
 
+See @fig-vars for the list of variables.
+
+We can also look at @fig-middltim to see the trends over time.
 
 ## High Schools
 
@@ -2413,6 +2415,10 @@ high.21 %>%
 
 
 ```
+
+See @fig-vars for the list of variables.
+
+We can also look at @fig-hightim to see the trends over time.
 
 # Correlations Over Time
 
