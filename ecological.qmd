@@ -2569,7 +2569,7 @@ The figure below represents the pearson correlation coefficient between the face
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
-#| lable: fig-middltim
+#| label: fig-middltim
 #| fig-cap: Correlations over time for TC Metro Middle Schools, 2001-2022
 
 middl_corrs %>% 

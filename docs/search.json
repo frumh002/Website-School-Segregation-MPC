@@ -343,7 +343,7 @@
     "href": "ecological.html#middle-schools",
     "title": "School Segregation Ecological Analysis",
     "section": "Middle Schools",
-    "text": "Middle Schools\n\n\n\n\n\n\nNote\n\n\n\nThe correlation matrix below shows middle schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.\n\n\n\n\n\n\n\n\n\n\n\nSee Figure 1 for the list of variables.\nWe can also look at ?@fig-middltim to see the trends over time.",
+    "text": "Middle Schools\n\n\n\n\n\n\nNote\n\n\n\nThe correlation matrix below shows middle schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.\n\n\n\n\n\n\n\n\n\n\n\nSee Figure 1 for the list of variables.\nWe can also look at Figure 3 to see the trends over time.",
     "crumbs": [
       "Ecological Analysis"
     ]
@@ -353,7 +353,7 @@
     "href": "ecological.html#high-schools",
     "title": "School Segregation Ecological Analysis",
     "section": "High Schools",
-    "text": "High Schools\n\n\n\n\n\n\nNote\n\n\n\nThe correlation matrix below shows high schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.\n\n\n\n\n\n\n\n\n\n\n\nSee Figure 1 for the list of variables.\nWe can also look at Figure 3 to see the trends over time.",
+    "text": "High Schools\n\n\n\n\n\n\nNote\n\n\n\nThe correlation matrix below shows high schools in the Twin Cities metro area with at least 50 students. Some of the PELSB measures are not available in 2003 so they were removed from the analysis for those years.\n\n\n\n\n\n\n\n\n\n\n\nSee Figure 1 for the list of variables.\nWe can also look at Figure 4 to see the trends over time.",
     "crumbs": [
       "Ecological Analysis"
     ]
@@ -373,7 +373,7 @@
     "href": "ecological.html#middle-schools-1",
     "title": "School Segregation Ecological Analysis",
     "section": "Middle Schools",
-    "text": "Middle Schools\n\n\n\n\n\n\nNote\n\n\n\nThe figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.\n\n\n\n\n\n\n\nCorrelations over time for TC Metro Middle Schools, 2001-2022",
+    "text": "Middle Schools\n\n\n\n\n\n\nNote\n\n\n\nThe figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.\n\n\n\n\n\n\n\n\n\n\nFigure 3: Correlations over time for TC Metro Middle Schools, 2001-2022",
     "crumbs": [
       "Ecological Analysis"
     ]
@@ -383,7 +383,7 @@
     "href": "ecological.html#high-schools-1",
     "title": "School Segregation Ecological Analysis",
     "section": "High Schools",
-    "text": "High Schools\n\n\n\n\n\n\nNote\n\n\n\nThe figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.\n\n\n\n\n\n\n\n\n\n\nFigure 3: Correlations over time for TC Metro High Schools, 2001-2022\n\n\n\n\n\nIn 2022, the typical (measured as a mean) Black child goes to a school that has X% free reduced lunch, and Y years of average teacher experience. In contrast, the typical white child goes to a school that has X% free reduced lunch, and Y years of average teacher experience.\nHow do you conceptualize “typical”? Did you just take the population weighted mean?\nDo more segregated schools have teachers with less experience or education?\nMCA/Testing",
+    "text": "High Schools\n\n\n\n\n\n\nNote\n\n\n\nThe figure below represents the pearson correlation coefficient between the faceted variable (i.e. the variable at the top of each chart) and the variable for each colored line. Every variable is not available across all years.\n\n\n\n\n\n\n\n\n\n\nFigure 4: Correlations over time for TC Metro High Schools, 2001-2022\n\n\n\n\n\nIn 2022, the typical (measured as a mean) Black child goes to a school that has X% free reduced lunch, and Y years of average teacher experience. In contrast, the typical white child goes to a school that has X% free reduced lunch, and Y years of average teacher experience.\nHow do you conceptualize “typical”? Did you just take the population weighted mean?\nDo more segregated schools have teachers with less experience or education?\nMCA/Testing",
     "crumbs": [
       "Ecological Analysis"
     ]
