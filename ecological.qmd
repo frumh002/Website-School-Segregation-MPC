@@ -172,6 +172,7 @@ reorder_cormat <- function(cormat){
   cormat <-cormat[hc$order, hc$order]
 }
 
+
 # Function for combining correlations over time in elementary schools
 elem_corrs_fun <- function(data, years) {
   # Initialize a list to store results
@@ -186,13 +187,13 @@ elem_corrs_fun <- function(data, years) {
     # Apply different column selections and renaming depending on the year 
     if (year < 2006) {
       yearly_data <- yearly_data %>%
-        select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>%
+        select(-year, -perc_not_nt, -perc_exp6_pls, -perc_grad, -avg_exp_yrs) %>%
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
+          "d_seg_ne_wb" = "ns_wht_blk",
           "p_me_m3" = "m3_perc_me",
           "p_me_r3" = "r3_perc_me"
         )
@@ -200,29 +201,31 @@ elem_corrs_fun <- function(data, years) {
       yearly_data <- yearly_data %>%
         select(-year, -m3_perc_me, -r3_perc_me) %>%  
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
-          "p_exp15" = "perc_exp15"
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs"
         )
     } else {  # For years after 2006 except 2019
       yearly_data <- yearly_data %>%
         select(-year) %>%
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs",
           "p_me_m3" = "m3_perc_me",
-          "p_me_r3" = "r3_perc_me",
-          "p_exp15" = "perc_exp15"
+          "p_me_r3" = "r3_perc_me"
         )
     }
     
@@ -260,23 +263,23 @@ middl_corrs_fun <- function(data, years) {
     # Apply different column selections and renaming depending on the year 
     if (year < 2003) {
       yearly_data <- yearly_data %>%
-        select(-year, -perc_nograd, -perc_nt, -perc_exp15, -m7_perc_me, -r7_perc_me) %>%
+        select(-year, -perc_not_nt, -perc_exp6_pls, -perc_grad, -m7_perc_me, -r7_perc_me, -avg_exp_yrs) %>%
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk"
+          "d_seg_ne_wb" = "ns_wht_blk"
         )
     } else if (year %in% c(2003:2005)) { 
       yearly_data <- yearly_data %>%
-        select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>%  
+        select(-year, -perc_not_nt, -perc_exp6_pls, -perc_grad, -avg_exp_yrs) %>%  
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
+          "d_seg_ne_wb" = "ns_wht_blk",
           "p_me_m7" = "m7_perc_me",
           "p_me_r7" = "r7_perc_me"
         )
@@ -284,29 +287,31 @@ middl_corrs_fun <- function(data, years) {
       yearly_data <- yearly_data %>%
         select(-year, -m7_perc_me, -r7_perc_me) %>%  
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
-          "p_exp15" = "perc_exp15"
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs"
         )
     } else {  # For years 2005 except 2019
       yearly_data <- yearly_data %>%
         select(-year) %>%
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs",
           "p_me_m7" = "m7_perc_me",
-          "p_me_r7" = "r7_perc_me",
-          "p_exp15" = "perc_exp15"
+          "p_me_r7" = "r7_perc_me"
         )
     }
     
@@ -345,23 +350,23 @@ high_corrs_fun <- function(data, years) {
     # Apply different column selections and renaming depending on the year 
     if (year < 2003) {
       yearly_data <- yearly_data %>%
-        select(-year, -perc_nograd, -perc_nt, -perc_exp15, -m11_perc_me, -r10_perc_me, -perc_four_grad, -perc_four_drop) %>%
+        select(-year, -perc_not_nt, -perc_exp6_pls, -perc_grad, -m11_perc_me, -r10_perc_me, -perc_four_grad, -perc_four_drop, -avg_exp_yrs) %>%
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk"
+          "d_seg_ne_wb" = "ns_wht_blk"
         )
     } else if (year %in% c(2003:2005)) { 
       yearly_data <- yearly_data %>%
-        select(-year, -perc_nograd, -perc_nt, -perc_exp15, -perc_four_grad, -perc_four_drop) %>%  
+        select(-year, -perc_not_nt, -perc_exp6_pls, -perc_grad, -perc_four_grad, -perc_four_drop, -avg_exp_yrs) %>%  
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
+          "d_seg_ne_wb" = "ns_wht_blk",
           "p_me_m11" = "m11_perc_me",
           "p_me_r10" = "r10_perc_me"
         )
@@ -369,14 +374,15 @@ high_corrs_fun <- function(data, years) {
       yearly_data <- yearly_data %>%
         select(-year, -perc_four_grad, -perc_four_drop) %>%  
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
-          "p_exp15" = "perc_exp15",
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs",
           "p_me_m11" = "m11_perc_me",
           "p_me_r10" = "r10_perc_me"
         )
@@ -384,29 +390,35 @@ high_corrs_fun <- function(data, years) {
       yearly_data <- yearly_data %>%
         select(-year, -m11_perc_me, -r10_perc_me) %>%  
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
-          "p_exp15" = "perc_exp15"
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs",
+          "p_stu_grd" = "perc_four_grad",
+          "p_stu_drpout" = "perc_four_drop"
         )
     } else {  # For years 2005 except 2019
       yearly_data <- yearly_data %>%
         select(-year) %>%
         rename(
-          "p_b" = "perblack",
-          "p_h" = "perhisp",
+          "p_bl" = "perblack",
+          "p_hisp" = "perhisp",
           "p_wh" = "perwhite",
           "p_frl" = "perfrlunch",
-          "wb_nei" = "ns_wht_blk",
-          "p_nt" = "perc_nt",
-          "p_nogr" = "perc_nograd",
+          "d_seg_ne_wb" = "ns_wht_blk",
+          "p_tch_not_new" = "perc_not_nt",
+          "p_tch_grad" = "perc_grad",
+          "p_exp6_plus" = "perc_exp6_pls",
+          "avg_exp" = "avg_exp_yrs",
           "p_me_m11" = "m11_perc_me",
           "p_me_r10" = "r10_perc_me",
-          "p_exp15" = "perc_exp15"
+          "p_stu_grd" = "perc_four_grad",
+          "p_stu_drpout" = "perc_four_drop"
         )
     }
     
@@ -457,13 +469,13 @@ pelsb <- ecol %>%
     teach_black_female = "BlackFemale", teach_black_male = "BlackMale", teach_black_und = "BlackUndeclared",
     teach_api_female = "HawaiianPacificIslanderFemale", teach_api_male = "HawaiianPacificIslanderMale", teach_api_und = "HawaiianPacificIslanderUndeclared",
     teach_tr_female = "MultiFemale", teach_tr_male = "MultiMale", teach_tr_und = "MultiUndeclared",
-    teach_new = "NewTeacher", AverageYearsofExperience, Experience1.5Years, Experience6.10Years, Experience11.15Years, Experience16.20Years, Experience21.25Years, Experience26.30Years, Experience31PlusYears, 
+    teach_new = "NewTeacher", avg_exp_yrs = "AverageYearsofExperience", Experience1.5Years, Experience6.10Years, Experience11.15Years, Experience16.20Years, Experience21.25Years, Experience26.30Years, Experience31PlusYears, 
     ExperienceLessThanBA = "LessThanBA", ExperienceBA = "BA", ExperienceMA = "MA", ExperiencePhD = "PhD",
     AgeLessThan25, Age25.29, Age30.34, Age35.44, Age45.54, Age55andolder) %>% 
-  mutate(
-    across(starts_with("Experience"), floor),
-    across(starts_with("Age"), floor),
-    across(starts_with("teach"), floor)) %>% 
+  # mutate(
+  #   across(starts_with("Experience"), floor),
+  #   across(starts_with("Age"), floor),
+  #   across(starts_with("teach"), floor)) %>% 
   # Merging with crosswalk to get the right format of nces school id
   left_join(mdex, by = "DTSCHID") %>% 
   mutate(leaid = as.character(leaid)) %>% 
@@ -536,10 +548,10 @@ grad.rates <- ecol %>%
 teach <- schools %>% 
   left_join(admin, by = c("leaid", "year")) %>% 
   left_join(pelsb, by = c("ncessch", "leaid", "year")) %>% 
-  mutate(
-    across(starts_with("teach_"), floor),
-    across(starts_with("Experience"), floor),
-  ) %>% 
+  # mutate(
+  #   across(starts_with("teach_"), floor),
+  #   across(starts_with("Experience"), floor),
+  # ) %>% 
   rowwise() %>% 
   mutate(
     teach_nam = teach_nam_female + teach_nam_male + teach_name_und,
@@ -552,24 +564,15 @@ teach <- schools %>%
   ) %>% 
   group_by(year, leaid) %>% 
   mutate(
-    perc_rank_black = percent_rank(perblack),
-    perc_rank_hisp = percent_rank(perhisp),
-    perc_rank_frlunch = percent_rank(perflunch),
-    q_black = case_when(perc_rank_black >= 0.75 ~ "Q1",
-                        between(perc_rank_black, 0.5, 0.7499) ~ "Q2",
-                        between(perc_rank_black, 0.25, 0.499) ~ "Q3",
-                        perc_rank_black < 0.25 ~ "Q4"),
-    q_hisp = case_when(perc_rank_hisp >= 0.75 ~ "Q1",
-                       between(perc_rank_hisp, 0.5, 0.7499) ~ "Q2",
-                       between(perc_rank_hisp, 0.25, 0.499) ~ "Q3",
-                       perc_rank_hisp < 0.25 ~ "Q4"),
-    q_frlunch = case_when(perc_rank_frlunch >= 0.75 ~ "Q1",
-                          between(perc_rank_frlunch, 0.5, 0.7499) ~ "Q2",
-                          between(perc_rank_frlunch, 0.25, 0.499) ~ "Q3",
-                          perc_rank_frlunch < 0.25 ~ "Q4"),
     perc_nt = teach_new / teach_member,
-    perc_exp15 = Experience1.5Years / teach_member,
-    perc_nograd = (ExperienceLessThanBA + ExperienceBA) / teach_member,
+    # Taking the complement of new to get those that are not new
+    perc_not_nt = 1-perc_nt,
+    # perc_exp15 = Experience1.5Years / teach_member,
+    # The perc_exp6_pls is not the complement of perc_exp15
+    # There is no consistent matching of sums across all experience rows that add up to the total FTE (even if we also add in the new teachers)
+    perc_exp6_pls = (Experience6.10Years + Experience11.15Years + Experience16.20Years + Experience21.25Years + Experience26.30Years + Experience31PlusYears) / teach_member,
+    # perc_nograd = (ExperienceLessThanBA + ExperienceBA) / teach_member,
+    perc_grad = (ExperienceMA + ExperiencePhD) / teach_member,
     perc_u30 = (AgeLessThan25 + Age25.29) / teach_member,
     perc_a30 = (Age30.34 + Age35.44 + Age45.54 + Age55andolder) / teach_member,
   ) %>% 
@@ -617,7 +620,7 @@ elem <- corrs %>%
     # ADMIN
     year, perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
     # PELSB
-    perc_nt, perc_exp15, perc_nograd, 
+    perc_not_nt, perc_exp6_pls, perc_grad, avg_exp_yrs,
     # MCA
     m3_perc_me, r3_perc_me)
 
@@ -630,7 +633,7 @@ middl <- corrs %>%
     # ADMIN
     year, perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
     # PELSB
-    perc_nt, perc_exp15, perc_nograd, 
+    perc_not_nt, perc_exp6_pls, perc_grad, avg_exp_yrs,
     # MCA
     m7_perc_me, r7_perc_me)
 
@@ -643,7 +646,7 @@ high <- corrs %>%
     # ADMIN
     year, perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
     # PESLB
-    perc_nt, perc_exp15, perc_nograd, 
+    perc_not_nt, perc_exp6_pls, perc_grad, avg_exp_yrs,
     # GRADUATION
     perc_four_grad, perc_four_drop,
     # MCA
@@ -657,36 +660,37 @@ The reference table below will serve as the list of variables for the figures re
 
 ```{r vars_table}
 #| echo: false
-#| label: fig-vars
-#| fig-cap: Variable list for correlation matrices
+#| label: tbl-vars
+#| tbl-cap: Variable list for correlation matrices
 
 corrs %>% 
   select(
     # ADMIN
     perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
     # PESLB
-    perc_nt, perc_exp15, perc_nograd, 
+    perc_not_nt, perc_exp6_pls, perc_grad, avg_exp_yrs,
     # GRADUATION
     perc_four_grad, perc_four_drop,
     # MCA
     m3_perc_me, r3_perc_me, m7_perc_me, r7_perc_me, m11_perc_me, r10_perc_me) %>% 
   rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
+    "p_bl" = "perblack",
+    "p_hisp" = "perhisp",
     "p_wh" = "perwhite",
     "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
+    "d_seg_ne_wb" = "ns_wht_blk",
+    "p_tch_not_new" = "perc_not_nt",
+    "p_tch_grad" = "perc_grad",
+    "p_exp6_plus" = "perc_exp6_pls",
+    "avg_exp" = "avg_exp_yrs",
     "p_me_m3" = "m3_perc_me",
     "p_me_r3" = "r3_perc_me",
     "p_me_m7" = "m7_perc_me",
     "p_me_r7" = "r7_perc_me",
     "p_me_m11" = "m11_perc_me",
     "p_me_r10" = "r10_perc_me",
-    "p_exp15" = "perc_exp15",
-    "p_4gr" = "perc_four_grad",
-    "p_4dr" = "perc_four_drop",
+    "p_stu_grd" = "perc_four_grad",
+    "p_stu_drpout" = "perc_four_drop",
   ) %>% 
   colnames() %>% 
   as.data.frame() %>% 
@@ -695,44 +699,67 @@ corrs %>%
   ) %>% 
   mutate(
     description = case_when(
-      variable=="p_b" ~ "Percent Black",
-      variable=="p_h" ~ "Pecent Hispanic/Latin@",
+      variable=="p_bl" ~ "Percent Black",
+      variable=="p_hisp" ~ "Pecent Hispanic/Latin@",
       variable=="p_wh" ~ "Percent white",
       variable=="p_frl" ~ "Percent free/reduced lunch",
-      variable=="wb_nei" ~ "White/Black Normalized Exposure Index",
-      variable=="p_nt" ~ "Percent FTE's that are new teachers",
-      variable=="p_nogr" ~ "Percent of FTE's with no graduate degree",
-      variable=="p_exp15" ~ "Percent of FTE's with 1 to 5 years of experience",
+      variable=="d_seg_ne_wb" ~ "White/Black Normalized Exposure Index",
+      variable=="p_tch_not_new" ~ "Percent FTE's that are not new teachers",
+      variable=="p_tch_grad" ~ "Percent of FTE's with a graduate degree (MA, PhD)",
+      variable=="p_exp6_plus" ~ "Percent of FTE's with 6 or more years of experience",
+      variable=="avg_exp" ~ "Average years of teacher experience",
       variable=="p_me_m3" ~ "Percent of students that meet or exceed 3rd grade MCA math scores",
       variable=="p_me_r3" ~ "Percent of students that meet or exceed 3rd grade MCA reading scores",
       variable=="p_me_m7" ~ "Percent of students that meet or exceed 7th grade MCA math scores",
       variable=="p_me_r7" ~ "Percent of students that meet or exceed 7th grade MCA reading scores",
       variable=="p_me_m11" ~ "Percent of students that meet or exceed 11th grade MCA math scores",
       variable=="p_me_r10" ~ "Percent of students that meet or exceed 10th grade MCA reading scores",
-      variable=="p_4gr" ~ "Percent of students that graduate in four years??",
-      variable=="p_4dr" ~ "Percent of students that drop out after four years??",
+      variable=="p_stu_grd" ~ "Percent of students that graduate in four years??",
+      variable=="p_stu_drpout" ~ "Percent of students that drop out after four years??",
+      TRUE ~ variable
+    ),
+    measure_level = case_when(
+      variable=="p_bl" ~ "School",
+      variable=="p_hisp" ~ "School",
+      variable=="p_wh" ~ "School",
+      variable=="p_frl" ~ "School",
+      variable=="d_seg_ne_wb" ~ "District",
+      variable=="p_tch_not_new" ~ "School",
+      variable=="p_tch_grad" ~ "School",
+      variable=="p_exp6_plus" ~ "School",
+      variable=="avg_exp" ~ "School",
+      variable=="p_me_m3" ~ "School",
+      variable=="p_me_r3" ~ "School",
+      variable=="p_me_m7" ~ "School",
+      variable=="p_me_r7" ~ "School",
+      variable=="p_me_m11" ~ "School",
+      variable=="p_me_r10" ~ "School",
+      variable=="p_stu_grd" ~ "School",
+      variable=="p_stu_drpout" ~ "School",
       TRUE ~ variable
     ),
     source = case_when(
-      variable=="p_b" ~ "NCES",
-      variable=="p_h" ~ "NCES",
+      variable=="p_bl" ~ "NCES",
+      variable=="p_hisp" ~ "NCES",
       variable=="p_wh" ~ "NCES",
       variable=="p_frl" ~ "NCES",
-      variable=="wb_nei" ~ "Stanford Education Opportunity",
-      variable=="p_nt" ~ "PELSB",
-      variable=="p_nogr" ~ "PELSB",
-      variable=="p_exp15" ~ "PELSB",
+      variable=="d_seg_ne_wb" ~ "Stanford Education Opportunity",
+      variable=="p_tch_not_new" ~ "PELSB",
+      variable=="p_tch_grad" ~ "PELSB",
+      variable=="p_exp6_plus" ~ "PELSB",
+      variable=="avg_exp" ~ "PELSB",
       variable=="p_me_m3" ~ "MDE",
       variable=="p_me_r3" ~ "MDE",
       variable=="p_me_m7" ~ "MDE",
       variable=="p_me_r7" ~ "MDE",
       variable=="p_me_m11" ~ "MDE",
       variable=="p_me_r10" ~ "MDE",
-      variable=="p_4gr" ~ "MDE",
-      variable=="p_4dr" ~ "MDE",
+      variable=="p_stu_grd" ~ "MDE",
+      variable=="p_stu_drpout" ~ "MDE",
       TRUE ~ variable
     )
   ) %>% 
+  arrange(measure_level) %>% 
   gt() %>% 
   tab_header(
     title = "Variable List and Source for Ecological Analysis, 2001-2022",
@@ -746,8 +773,20 @@ corrs %>%
   cols_label(
     variable = "Variable",
     description = "Description",
+    measure_level = "Measure Level",
     source = "Data Source",
   ) %>%
+  gt_highlight_rows(
+    rows = measure_level=="District",
+    columns = everything(),
+    fill = "#80bcd8",
+    alpha = 0.2) %>% 
+  tab_footnote(
+    footnote = "Most variables are at the school level, except for the district-level segregation indices.",
+    locations = cells_column_labels(
+      columns = measure_level
+    )
+  ) %>% 
   tab_style(locations = cells_title("title"),
             style = cell_text(weight = 700)) %>%
   tab_style(locations = cells_title("subtitle"),
@@ -790,6 +829,8 @@ The figures below are show the distribution of the variables used in the correla
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Distribution of Ecological Variables for Twin Cities Metro Schools, 2018. Most of these variables represent proportions, with the exception of the district-level normalized exposure index (d_seg_ne_wb). This index is still represented on a 0-1 scale, with lower numbers indicating less segregation and more numbers indicating more segregation (See the Segregation Indices tab for more information).
+#| label: fig-distributions
 
 corrs %>% 
   filter(
@@ -802,28 +843,28 @@ corrs %>%
     # ADMIN
     perblack = "perblack.x", perhisp = "perhisp.x", perwhite = "perwhite.x", perfrlunch = "perfrlunch.x", ns_wht_blk,
     # PESLB
-    perc_nt, perc_exp15, perc_nograd, 
+    perc_not_nt, perc_exp6_pls, perc_grad,
     # GRADUATION
     perc_four_grad, perc_four_drop,
     # MCA
     m3_perc_me, r3_perc_me, m7_perc_me, r7_perc_me, m11_perc_me, r10_perc_me) %>% 
   rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
+    "p_bl" = "perblack",
+    "p_hisp" = "perhisp",
     "p_wh" = "perwhite",
     "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
+    "d_seg_ne_wb" = "ns_wht_blk",
+    "p_tch_not_new" = "perc_not_nt",
+    "p_tch_grad" = "perc_grad",
+    "p_exp6_plus" = "perc_exp6_pls",
     "p_me_m3" = "m3_perc_me",
     "p_me_r3" = "r3_perc_me",
     "p_me_m7" = "m7_perc_me",
     "p_me_r7" = "r7_perc_me",
     "p_me_m11" = "m11_perc_me",
     "p_me_r10" = "r10_perc_me",
-    "p_exp15" = "perc_exp15",
-    "p_4gr" = "perc_four_grad",
-    "p_4dr" = "perc_four_drop",
+    "p_stu_grd" = "perc_four_grad",
+    "p_stu_drpout" = "perc_four_drop",
   ) %>% 
   pivot_longer(-level, names_to = "type", values_to = "value") %>% 
   ggplot() +
@@ -942,6 +983,143 @@ corrs %>%
 
 ```
 
+
+```{r avg_exp_distr}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+#| fig-cap: Distribution of Average Teacher Experience for Twin Cities Metro Schools, 2018.
+#| label: fig-avgexp
+
+corrs %>% 
+  filter(
+    member>=50, 
+    year==2018,
+    leaname.x %in% metro.districts2,
+    level %in% c("Elementary/Primary", "Middle", "High/Secondary")) %>% 
+  select(
+    level,
+    # PESLB
+    avg_exp_yrs
+    ) %>% 
+  ggplot() +
+  aes(x = avg_exp_yrs, fill = level) +
+  geom_histogram(alpha = 0.7) +
+  scale_fill_manual(values = c("#264653", "#c1121f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000")) +
+  labs(
+    # Main title label
+    title = "Distribution of Average Teacher Experience for Twin Cities Metro Schools, 2018",
+    # Subtitle label
+    subtitle = paste0("Stratified by <b style='color:#264653'>Elementary</b>, <b style='color:#e9c46a'>Middle</b>, and <b style='color:#c1121f'>High</b> Schools"),
+    # X-axis label
+    x = "Average Years of Teacher Experience",
+    # Y-axis label
+    y = "Count",
+    # Caption label
+    caption = "Sources: PELSB.",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "none",
+    legend.title = element_text(
+      family = "",
+      face = "bold",
+      size = 8,
+      color = "black"
+    ),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 12,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 16,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0,
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  )
+
+
+```
+
+
+
 # Cross-Sectional Correlation Matrices
 
 ## Elementary Schools
@@ -973,53 +1151,59 @@ The correlation matrix below shows elementary schools in the Twin Cities metro a
 # 
 # PerformanceAnalytics::chart.Correlation(el.21, histogram=TRUE, pch=19)
 
-# elem.03 <- elem %>% 
-#   filter(year==2003) %>% 
-#   select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>% 
+# elem.03 <- elem %>%
+#   filter(year==2003) %>%
+#   select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>%
 #   rename(
-#     "p_b" = "perblack",
-#     "p_h" = "perhisp",
+#     "p_bl" = "perblack",
+#     "p_hisp" = "perhisp",
 #     "p_wh" = "perwhite",
 #     "p_frl" = "perfrlunch",
-#     "wb_nei" = "ns_wht_blk",
+#     "d_seg_ne_wb" = "ns_wht_blk",
+#     "p_tch_not_new" = "perc_not_nt",
+#     "p_tch_grad" = "perc_grad",
+#     "p_exp6_plus" = "perc_exp6_pls",
+#     "avg_exp" = "avg_exp_yrs",
 #     "p_me_m3" = "m3_perc_me",
-#     "p_me_r3" = "r3_perc_me",
-#   ) %>% 
-#   cor(use = "complete.obs") %>% 
+#     "p_me_r3" = "r3_perc_me"
+#   ) %>%
+#   cor(use = "complete.obs") %>%
 #   reorder_cormat()
 # 
-# elem.11 <- elem %>% 
-#   filter(year==2011) %>% 
-#   select(-year) %>% 
+# elem.11 <- elem %>%
+#   filter(year==2011) %>%
+#   select(-year) %>%
 #   rename(
-#     "p_b" = "perblack",
-#     "p_h" = "perhisp",
+#     "p_bl" = "perblack",
+#     "p_hisp" = "perhisp",
 #     "p_wh" = "perwhite",
 #     "p_frl" = "perfrlunch",
-#     "wb_nei" = "ns_wht_blk",
-#     "p_nt" = "perc_nt",
-#     "p_nogr" = "perc_nograd",
+#     "d_seg_ne_wb" = "ns_wht_blk",
+#     "p_tch_not_new" = "perc_not_nt",
+#     "p_tch_grad" = "perc_grad",
+#     "p_exp6_plus" = "perc_exp6_pls",
+#     "avg_exp" = "avg_exp_yrs",
 #     "p_me_m3" = "m3_perc_me",
-#     "p_me_r3" = "r3_perc_me",
-#     "p_exp15" = "perc_exp15"
-#   ) %>% 
-#   cor(use = "complete.obs") %>% 
+#     "p_me_r3" = "r3_perc_me"
+#   ) %>%
+#   cor(use = "complete.obs") %>%
 #   reorder_cormat()
 
 elem.21 <- elem %>% 
   filter(year==2021) %>% 
   select(-year) %>% 
   rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
+    "p_bl" = "perblack",
+    "p_hisp" = "perhisp",
     "p_wh" = "perwhite",
     "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
+    "d_seg_ne_wb" = "ns_wht_blk",
+    "p_tch_not_new" = "perc_not_nt",
+    "p_tch_grad" = "perc_grad",
+    "p_exp6_plus" = "perc_exp6_pls",
+    "avg_exp" = "avg_exp_yrs",
     "p_me_m3" = "m3_perc_me",
-    "p_me_r3" = "r3_perc_me",
-    "p_exp15" = "perc_exp15"
+    "p_me_r3" = "r3_perc_me"
   ) %>% 
   cor(use = "complete.obs") %>% 
   reorder_cormat()
@@ -1300,6 +1484,8 @@ elem.21 <- elem %>%
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Correlations for Twin Cities Elementary Schools, 2021.
+#| label: fig-elemcorr21
 
 elem.21 %>% 
   melt(na.rm = T) %>% 
@@ -1314,6 +1500,16 @@ elem.21 %>%
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+  annotate(
+    "rect",
+    fill = NA,
+    color = "black",
+    linewidth = 1,
+    xmin = 8.5,
+    xmax = 9.5,
+    ymin = .5,
+    ymax = 11.5
+  ) +
   labs(
     # Main title label
     title = "Correlations Across Metro Elementary Schools, 2021",
@@ -1431,7 +1627,7 @@ elem.21 %>%
 
 ```
 
-See @fig-vars for the list of variables.
+See @tbl-vars for the list of variables.
 
 We can also look at @fig-elemtim to see the trends over time.
 
@@ -1462,53 +1658,59 @@ The correlation matrix below shows middle schools in the Twin Cities metro area 
 # 
 # PerformanceAnalytics::chart.Correlation(el.21, histogram=TRUE, pch=19)
 
-# middl.03 <- middl %>% 
-#   filter(year==2003) %>% 
-#   select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>% 
+# middl.03 <- middl %>%
+#   filter(year==2003) %>%
+#   select(-year, -perc_nograd, -perc_nt, -perc_exp15) %>%
 #   rename(
-#     "p_b" = "perblack",
-#     "p_h" = "perhisp",
+#     "p_bl" = "perblack",
+#     "p_hisp" = "perhisp",
 #     "p_wh" = "perwhite",
 #     "p_frl" = "perfrlunch",
-#     "wb_nei" = "ns_wht_blk",
+#     "d_seg_ne_wb" = "ns_wht_blk",
+#     "p_tch_not_new" = "perc_not_nt",
+#     "p_tch_grad" = "perc_grad",
+#     "p_exp6_plus" = "perc_exp6_pls",
+#     "avg_exp" = "avg_exp_yrs",
 #     "p_me_m7" = "m7_perc_me",
 #     "p_me_r7" = "r7_perc_me",
-#   ) %>% 
-#   cor(use = "complete.obs") %>% 
+#   ) %>%
+#   cor(use = "complete.obs") %>%
 #   reorder_cormat()
 # 
-# middl.11 <- middl %>% 
-#   filter(year==2011) %>% 
-#   select(-year) %>% 
+# middl.11 <- middl %>%
+#   filter(year==2011) %>%
+#   select(-year) %>%
 #   rename(
-#     "p_b" = "perblack",
-#     "p_h" = "perhisp",
+#     "p_bl" = "perblack",
+#     "p_hisp" = "perhisp",
 #     "p_wh" = "perwhite",
 #     "p_frl" = "perfrlunch",
-#     "wb_nei" = "ns_wht_blk",
-#     "p_nt" = "perc_nt",
-#     "p_nogr" = "perc_nograd",
+#     "d_seg_ne_wb" = "ns_wht_blk",
+#     "p_tch_not_new" = "perc_not_nt",
+#     "p_tch_grad" = "perc_grad",
+#     "p_exp6_plus" = "perc_exp6_pls",
+#     "avg_exp" = "avg_exp_yrs",
 #     "p_me_m7" = "m7_perc_me",
 #     "p_me_r7" = "r7_perc_me",
-#     "p_exp15" = "perc_exp15"
-#   ) %>% 
-#   cor(use = "complete.obs") %>% 
+#   ) %>%
+#   cor(use = "complete.obs") %>%
 #   reorder_cormat()
 
 middl.21 <- middl %>% 
   filter(year==2021) %>% 
   select(-year) %>% 
   rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
+    "p_bl" = "perblack",
+    "p_hisp" = "perhisp",
     "p_wh" = "perwhite",
     "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
+    "d_seg_ne_wb" = "ns_wht_blk",
+    "p_tch_not_new" = "perc_not_nt",
+    "p_tch_grad" = "perc_grad",
+    "p_exp6_plus" = "perc_exp6_pls",
+    "avg_exp" = "avg_exp_yrs",
     "p_me_m7" = "m7_perc_me",
     "p_me_r7" = "r7_perc_me",
-    "p_exp15" = "perc_exp15"
   ) %>% 
   cor(use = "complete.obs") %>% 
   reorder_cormat()
@@ -1789,6 +1991,8 @@ middl.21 <- middl %>%
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Correlations Across Metro Midle Schools, 2021.
+#| label: fig-middlcorr21
 
 middl.21 %>% 
   melt(na.rm = T) %>% 
@@ -1803,6 +2007,16 @@ middl.21 %>%
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+  annotate(
+    "rect",
+    fill = NA,
+    color = "black",
+    linewidth = 1,
+    xmin = 8.5,
+    xmax = 9.5,
+    ymin = .5,
+    ymax = 11.5
+  ) +
   labs(
     # Main title label
     title = "Correlations Across Metro Middle Schools, 2021",
@@ -1921,7 +2135,7 @@ middl.21 %>%
 
 ```
 
-See @fig-vars for the list of variables.
+See @tbl-vars for the list of variables.
 
 We can also look at @fig-middltim to see the trends over time.
 
@@ -1954,57 +2168,65 @@ The correlation matrix below shows high schools in the Twin Cities metro area wi
 # 
 # PerformanceAnalytics::chart.Correlation(hs.21, histogram=TRUE, pch=19)
 
-# high.03 <- high %>% 
-#   filter(year==2003) %>% 
-#   select(-year, -perc_nograd, -perc_nt, -perc_exp15, -perc_four_grad, -perc_four_drop) %>% 
+# high.03 <- high %>%
+#   filter(year==2003) %>%
+#   select(-year, -perc_grad, -perc_not_nt, -perc_exp6_pls, -avg_ , -perc_four_grad, -perc_four_drop) %>%
 #   rename(
-#     "p_b" = "perblack",
-#     "p_h" = "perhisp",
+#     "p_bl" = "perblack",
+#     "p_hisp" = "perhisp",
 #     "p_wh" = "perwhite",
 #     "p_frl" = "perfrlunch",
-#     "wb_nei" = "ns_wht_blk",
+#     "d_seg_ne_wb" = "ns_wht_blk",
+#     "p_tch_not_new" = "perc_not_nt",
+#     "p_tch_grad" = "perc_grad",
+#     "p_exp6_plus" = "perc_exp6_pls",
+#     "avg_exp" = "avg_exp_yrs",
 #     "p_me_m11" = "m11_perc_me",
 #     "p_me_r10" = "r10_perc_me",
-#   ) %>% 
-#   cor(use = "complete.obs") %>% 
+#     "p_stu_grd" = "perc_four_grad",
+#     "p_stu_drpout" = "perc_four_drop"
+#   ) %>%
+#   cor(use = "complete.obs") %>%
 #   reorder_cormat()
 # 
-# high.11 <- high %>% 
-#   filter(year==2011) %>% 
-#   select(-year) %>% 
+# high.11 <- high %>%
+#   filter(year==2011) %>%
+#   select(-year) %>%
 #   rename(
-#     "p_b" = "perblack",
-#     "p_h" = "perhisp",
+#     "p_bl" = "perblack",
+#     "p_hisp" = "perhisp",
 #     "p_wh" = "perwhite",
 #     "p_frl" = "perfrlunch",
-#     "wb_nei" = "ns_wht_blk",
-#     "p_nt" = "perc_nt",
-#     "p_nogr" = "perc_nograd",
+#     "d_seg_ne_wb" = "ns_wht_blk",
+#     "p_tch_not_new" = "perc_not_nt",
+#     "p_tch_grad" = "perc_grad",
+#     "p_exp6_plus" = "perc_exp6_pls",
+#     "avg_exp" = "avg_exp_yrs",
 #     "p_me_m11" = "m11_perc_me",
 #     "p_me_r10" = "r10_perc_me",
-#     "p_4gr" = "perc_four_grad",
-#     "p_4dr" = "perc_four_drop",
-#     "p_exp15" = "perc_exp15"
-#   ) %>% 
-#   cor(use = "complete.obs") %>% 
+#     "p_stu_grd" = "perc_four_grad",
+#     "p_stu_drpout" = "perc_four_drop"
+#   ) %>%
+#   cor(use = "complete.obs") %>%
 #   reorder_cormat()
 
 high.21 <- high %>% 
   filter(year==2021) %>% 
   select(-year) %>% 
   rename(
-    "p_b" = "perblack",
-    "p_h" = "perhisp",
+    "p_bl" = "perblack",
+    "p_hisp" = "perhisp",
     "p_wh" = "perwhite",
     "p_frl" = "perfrlunch",
-    "wb_nei" = "ns_wht_blk",
-    "p_nt" = "perc_nt",
-    "p_nogr" = "perc_nograd",
+    "d_seg_ne_wb" = "ns_wht_blk",
+    "p_tch_not_new" = "perc_not_nt",
+    "p_tch_grad" = "perc_grad",
+    "p_exp6_plus" = "perc_exp6_pls",
+    "avg_exp" = "avg_exp_yrs",
     "p_me_m11" = "m11_perc_me",
     "p_me_r10" = "r10_perc_me",
-    "p_4gr" = "perc_four_grad",
-    "p_4dr" = "perc_four_drop",
-    "p_exp15" = "perc_exp15"
+    "p_stu_grd" = "perc_four_grad",
+    "p_stu_drpout" = "perc_four_drop"
   ) %>% 
   cor(use = "complete.obs") %>% 
   reorder_cormat()
@@ -2285,6 +2507,8 @@ high.21 <- high %>%
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Correlations Across Metro High Schools, 2021.
+#| label: fig-highcorr21
 
 high.21 %>% 
   melt(na.rm = T) %>% 
@@ -2299,6 +2523,16 @@ high.21 %>%
     limit = c(-1,1), 
     name = "Pearson\nCorrelation") +
   geom_text(aes(Var2, Var1, label = round(value, 2)), color = "black", size = 4) +
+  annotate(
+    "rect",
+    fill = NA,
+    color = "black",
+    linewidth = 1,
+    xmin = 0.5,
+    xmax = 1.5,
+    ymin = .5,
+    ymax = 13.5
+  ) +
   labs(
     # Main title label
     title = "Correlations Across Metro High Schools, 2021",
@@ -2416,7 +2650,7 @@ high.21 %>%
 
 ```
 
-See @fig-vars for the list of variables.
+See @tbl-vars for the list of variables.
 
 We can also look at @fig-hightim to see the trends over time.
 
@@ -2432,6 +2666,204 @@ high_corrs <- high_corrs_fun(high, years = 2001:2021)
 
 ```
 
+:::{.callout-note}
+The figure below is an example of the plots we will use to understand the correlation trends over time. Please refer to this chart and the interpretation as needed.
+:::
+
+```{r elem_corr_time_plot}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 8
+#| fig-cap: Correlations Between District-Level Normalized Epxosure Segregation and Ecological Variables, 2001-2021.
+#| label: fig-timexample
+
+
+elem_corrs %>% 
+  filter(Var1=="d_seg_ne_wb") %>% 
+  ggplot() +
+  annotate(
+    "rect",
+    fill = "#6a994e",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = 0,
+    ymax = 1
+  ) +
+  annotate(
+    "rect",
+    fill = "#bc4749",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = -1,
+    ymax = 0
+  ) +
+  aes(x = year, y = value, color = Var2) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~Var1) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f", "#B93289FF", "#C86C7CFF")) +
+  annotate(
+    "richtext", 
+    fill = NA, 
+    label.color = NA,
+    label = "<b>This is the correlation between the variable we are plotting and itself. As expected, it is consistely 1 across time.</b>",
+    x = 2002, 
+    y = 0.9,
+    color = "#A092B7FF",
+    size = 4,
+    hjust = 0
+  ) +
+  annotate(
+    "curve",
+    x = 2002, 
+    y = 0.9,
+    yend = 0.97,
+    xend = 2001.5,
+    linewidth = 0.8,
+    curvature = -0.5,
+    arrow = arrow(length = unit(0.3, 'cm')),
+    colour = "#A092B7FF"
+  ) +
+  annotate(
+    "richtext", 
+    fill = NA, 
+    label.color = NA,
+    label = "<b>This is the correlation between the variable we are<br>plotting and p_me_m3. It is a negative correlation that is trending<br>towards 0 over time. This indicates that the negative<br>correlation between the variable we are plotting<br>(d_seg_ne_wb, in this example) and p_me_m3., is getting weaker<br>over time.</b>",
+    x = 2001, 
+    y = -0.3,
+    color = "#2a9d8f",
+    size = 3.5,
+    hjust = 0
+  ) +
+  annotate(
+    "curve",
+    x = 2009, 
+    xend = 2010,
+    y = -0.3,
+    yend = -0.6,
+    linewidth = 0.8,
+    curvature = -0.5,
+    arrow = arrow(length = unit(0.3, 'cm')),
+    colour = "#2a9d8f"
+  ) +
+  geom_hline(
+    yintercept = 0, 
+    linewidth = 0.5,
+    alpha = 0.5) +
+  labs(
+    # Main title label
+    title = "Correlations Between District-Level Normalized Epxosure Segregation and Ecological Variables, 2001-2021",
+    # Subtitle label
+    subtitle = paste0("Across Metro Elementary Schools"),
+    # X-axis label
+    x = "Fall of School Year",
+    # Y-axis label
+    y = "Pearson Correlation Coefficient",
+    # Caption label
+    caption = "Sources: PELSB, MDE, NCES, Stanford Segregation",
+    # Legend titles
+  ) +
+  theme(
+    # Legend location, formatting, and background
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    # Legend background fill and outline (color)
+    legend.background = element_blank(),
+    # 
+    legend.box.background = element_blank(),
+    # Legend box for shapes
+    legend.key = element_blank(),
+    # Overall text formatting
+    text = element_text(
+      family = "",
+      face = "bold",
+      size = 12,
+      color = "black"
+    ),
+    # Plot title formatting (margin t=top, b=bottom)
+    plot.title = element_markdown(
+      lineheight = 1.1,
+      family = "",
+      size = 16,
+      face = "bold",
+      hjust = 0.5,
+      color = "black",
+      margin = margin(
+        t = 0.5, 
+        unit = "cm")
+    ),
+    # Plot subtitle formatting
+    plot.subtitle = element_markdown(
+      family = "",
+      size = 14,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Adjust facet labels
+    strip.text = element_markdown(
+      family = "",
+      size = 10,
+      hjust = 0.5,
+      face = "plain",
+      color = "black"
+    ),
+    # Plot caption formatting
+    plot.caption = element_text(
+      family = "",
+      size = 10,
+      face = "plain",
+      color = "black"
+    ),
+    # Axes text angle and formatting
+    axis.text.x = element_text(
+      angle = 0,
+      face = "bold"
+    ),
+    axis.text.y = element_text(
+      angle = 0, 
+      face = "bold"
+    ),
+    # Overall (x and y) axes ticks formatting
+    axis.ticks = element_blank(),
+    # Overall (x and y) axes lines formatting
+    axis.line = element_line(
+      color = "#b4aea9"
+    ),
+    # Panel grid formatting
+    panel.grid = element_line(
+      color = "grey95"
+    ),
+    # Minor overall (x and y) panel grid formatting
+    panel.grid.minor = element_blank(
+      
+    ),
+    # Major overall (x and y) panel grid formatting
+    panel.grid.major = element_line(
+      linetype = "solid"
+    ),
+    # Panel background (what is inside axes)
+    panel.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    ),
+    # Plot background (what is outside axes)
+    plot.background = element_rect(
+      fill = "#ffffff", 
+      color = "#ffffff"
+    )
+  ) +
+  guides(color = guide_legend(nrow = 2, byrow = TRUE))
+
+
+```
+See @tbl-vars for the list of variables.
+
+Interpreting figure above correctly can certainly be a challenge. For the most part, if you see lines with an upward trajectory, that is good. Since most of the variables are coded so that higher percentages are better (with the exception of percent of students that are on free or reduced lunch), we would want to see a correlation getting stronger in a positive direction (away from 0), or weaker from a negative direction (towards 0), between the faceted variable of interest (d_seg_ne_wb in this example) and the outcome variable plotted. This is unfortunately the case for most variables except the one being shown above, where the higher the d_seg_ne_wb raw score, the more segregated districts are. 
+
+The expectations of what we would see between segregation indices and various outcomes is biased by what prior literature has shown. Given the fundamental challenges in adequately funding public schools equitably across the TC metro area, which would lead to staff retention difficulties, we would expect to see a negative correlation between White-Black normalized exposure index (d_seg_ne_wb) and average years of teacher experience (avg_exp). As segregation increases, we should see the average years of teacher experience decrease, producing a negative correlation. This is exactly why a temporal analysis is helpful. As we can see, in 2006 the correlation was actually positive (albeit weak), indicating that as segregation increased, we saw a general trend of increased average teacher experience. However, as time goes one, this positive correlation gets weaker and eventually becomes a negative correlation by 2016, gaining in strength through 2021 (lagged effect?).
+
 ## Elementary Schools
 
 :::{.callout-note}
@@ -2442,16 +2874,38 @@ The figure below represents the pearson correlation coefficient between the face
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
-#| fig-cap: Correlations over time for TC Metro Elementary Schools, 2001-2022
+#| fig-cap: Correlations over time for TC Metro Elementary Schools, 2001-2022.
 #| label: fig-elemtim
 
 elem_corrs %>% 
-  filter(Var1 %in% c("wb_nei", "p_b", "p_h")) %>% 
+  filter(Var1 %in% c("d_seg_ne_wb", "p_bl", "p_hisp", "p_wh")) %>% 
   ggplot() +
+  annotate(
+    "rect",
+    fill = "#6a994e",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = 0,
+    ymax = 1
+  ) +
+  annotate(
+    "rect",
+    fill = "#bc4749",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = -1,
+    ymax = 0
+  ) +
   aes(x = year, y = value, color = Var2) +
   geom_line(linewidth = 1) +
-  facet_wrap(~Var1) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  facet_wrap(~Var1, nrow = 2) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f", "#B93289FF", "#C86C7CFF")) +
+  geom_hline(
+    yintercept = 0, 
+    linewidth = 0.5,
+    alpha = 0.5) +
   labs(
     # Main title label
     title = "Correlations Between Variables, 2001-2021",
@@ -2559,6 +3013,9 @@ elem_corrs %>%
 
 
 ```
+
+See @tbl-vars for a list of variables.
+
 ## Middle Schools
 
 :::{.callout-note}
@@ -2569,16 +3026,38 @@ The figure below represents the pearson correlation coefficient between the face
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Correlations over time for TC Metro Middle Schools, 2001-2022.
 #| label: fig-middltim
-#| fig-cap: Correlations over time for TC Metro Middle Schools, 2001-2022
 
 middl_corrs %>% 
-  filter(Var1 %in% c("wb_nei", "p_b", "p_h")) %>% 
+  filter(Var1 %in% c("d_seg_ne_wb", "p_bl", "p_hisp", "p_wh")) %>% 
   ggplot() +
+  annotate(
+    "rect",
+    fill = "#6a994e",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = 0,
+    ymax = 1
+  ) +
+  annotate(
+    "rect",
+    fill = "#bc4749",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = -1,
+    ymax = 0
+  ) +
   aes(x = year, y = value, color = Var2) +
   geom_line(linewidth = 1) +
   facet_wrap(~Var1) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f")) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f", "#B93289FF", "#C86C7CFF")) +
+  geom_hline(
+    yintercept = 0, 
+    linewidth = 0.5,
+    alpha = 0.5) +
   labs(
     # Main title label
     title = "Correlations Between Variables, 2001-2021",
@@ -2686,6 +3165,7 @@ middl_corrs %>%
 
 
 ```
+See @tbl-vars for the list of variables.
 
 ## High Schools
 
@@ -2697,16 +3177,38 @@ The figure below represents the pearson correlation coefficient between the face
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Correlations over time for TC Metro High Schools, 2001-2022.
 #| label: fig-hightim
-#| fig-cap: Correlations over time for TC Metro High Schools, 2001-2022
 
 high_corrs %>% 
-  filter(Var1 %in% c("wb_nei", "p_b", "p_h")) %>% 
+  filter(Var1 %in% c("d_seg_ne_wb", "p_bl", "p_hisp", "p_wh")) %>% 
   ggplot() +
+  annotate(
+    "rect",
+    fill = "#6a994e",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = 0,
+    ymax = 1
+  ) +
+  annotate(
+    "rect",
+    fill = "#bc4749",
+    alpha = 0.2,
+    xmin = 2001,
+    xmax = 2021,
+    ymin = -1,
+    ymax = 0
+  ) +
   aes(x = year, y = value, color = Var2) +
   geom_line(linewidth = 1) +
   facet_wrap(~Var1) +
-  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f", "#B93289FF", "#C86C7CFF")) +
+  scale_color_manual(values = c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#A092B7FF", "#8AD9B1FF", "#a7c957",  "#778da9", "#780000", "#c1121f", "#B93289FF", "#C86C7CFF", "#0D0887FF")) +
+  geom_hline(
+    yintercept = 0, 
+    linewidth = 0.5,
+    alpha = 0.5) +
   labs(
     # Main title label
     title = "Correlations Between Variables, 2001-2021",
@@ -2815,6 +3317,9 @@ high_corrs %>%
 
 
 ```
+See @tbl-vars for the list of variables.
+
+
 
 
 

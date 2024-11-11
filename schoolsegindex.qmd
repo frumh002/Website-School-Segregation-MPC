@@ -567,6 +567,8 @@ According to Education Opportunity's [website](https://edopportunity.org/segrega
 #| echo: false
 #| fig-width: 12
 #| fig-height: 8
+#| fig-cap: Normalized Exposure Index in the Twin Cities Metro, 1991-2022.
+#| label: fig-neiplot
 
 # MN School District Normalized Exposure Index ----------------------------
 

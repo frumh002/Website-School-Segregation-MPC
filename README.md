@@ -33,16 +33,11 @@ To do:
 - Census CBSA and place==Minneapolis
 - 1-year ACS estimates for 5-17 year olds from 2001-2022
 - Explore Civil Rights Dataset and what shcools are there compared to metro overall, are they representative of the metro area?
-
-- Integration 
-
+- Add in difference of percent from mean for ecological analysis
+- Update Racial Composition and Economic Segregation to filter by year (or maybe show the different correlation lines over time stacked)
 - What does the four year graduation rate mean? The proportion of students
+- N of schools and districts that are in the ecological plot (and percent of students - is there selection bias into this chart?)
 
-
-Recode trends in ecological analysis so that the scales are the same (reverse code)
-Subtitle, school racial composition, district segregation, teacher, test scores
-N of schools and districts that are in this plot
-Do associations change over time
 
 *This repo was initially generated from a Quarto template available here: https://github.com/jtr13/website-template.*
 
